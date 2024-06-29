@@ -29,7 +29,7 @@ const Task = ({ task, index, columnId, deleteTask }) => {
         <Paper
             ref={(node) => drag(drop(node))}
             style={{
-                padding: 12,
+                padding: 15,
                 marginBottom: 12,
                 backgroundColor: isDragging ? '#ddd' : '#fff',
                 cursor: 'move',

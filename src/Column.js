@@ -48,8 +48,9 @@ const Column = ({ column, tasks, moveTask, deleteTask }) => {
             elevation={6}
             sx={{
                 borderTop: `4px solid ${borderColor}`,
-                padding: 1,
-                width: 260,
+                padding: 6,
+                paddingTop:2,
+                width: 280,
                 backgroundColor: 'background.paper',
                 transition: 'all 0.3s ease-in-out',
                 '&:hover': {
@@ -58,19 +59,13 @@ const Column = ({ column, tasks, moveTask, deleteTask }) => {
                 borderBottom: `4px solid ${borderColor}`, // Customized border thickness and color
             }}
         >
-            <Typography variant="h6" align="center" sx={{ mb: 1 }}>
+            <Typography variant="h5" align="center" sx={{ mb: 1 }}>
                 {column.title}
             </Typography>
             <Divider sx={{ mb: 2, backgroundColor: 'rgba(0, 0, 0, 0.3)' }} />
             <Box sx={{ minHeight: 100, mt: 1 }}>
                 {tasks.map((task, index) => (
-                    <Task
-                        key={task.id}
-                        task={task}
-                        index={index}
-                        columnId={column.id}
-                        deleteTask={deleteTask}
-                    />
+                    <Task key={task.id} task={task} index={index} columnId={column.id} deleteTask={deleteTask} />
                 ))}
             </Box>
         </Paper>

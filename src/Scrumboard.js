@@ -215,7 +215,7 @@ const Scrumboard = () => {
             Add Task
           </Button>
           <Box width="100%" mt={2}>
-            <Box display="flex">
+            <Box display="flex" justifyContent="center">
               {data.columnOrder.map((columnId) => (
                   <Box
                       key={columnId}
@@ -279,10 +279,7 @@ const Scrumboard = () => {
                         onChange={(e) => handleSubTaskChange(index, e.target.value)}
                         placeholder={`Sub-task ${index + 1}`}
                     />
-                    <IconButton
-                        color="secondary"
-                        onClick={() => handleRemoveSubTask(index)}
-                    >
+                    <IconButton color="secondary" onClick={() => handleRemoveSubTask(index)}>
                       <RemoveIcon />
                     </IconButton>
                   </Box>
@@ -302,7 +299,7 @@ const Scrumboard = () => {
           </DialogActions>
         </Dialog>
 
-        <Box display="flex" justifyContent="space-around" p={2} flexWrap="wrap">
+        <Box display="flex" justifyContent="center" p={2} flexWrap="wrap">
           {data.columnOrder.map((columnId) => {
             const column = data.columns[columnId];
             const tasks = column.taskIds.map((taskId) => data.tasks[taskId]);
