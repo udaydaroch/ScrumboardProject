@@ -61,7 +61,7 @@ const Column = ({ column, tasks, moveTask }) => {
             <Typography variant="h6" align="center" sx={{ mb: 1 }}>
                 {column.title}
             </Typography>
-            <Divider sx={{ mb: 1 }} />
+            <Divider sx={{ mb: 2, backgroundColor: 'rgba(0, 0, 0, 0.3)' }} />
             <Box sx={{ minHeight: 100, mt: 1 }}>
                 {tasks.map((task, index) => (
                     <Task key={task.id} task={task} index={index} columnId={column.id} />
