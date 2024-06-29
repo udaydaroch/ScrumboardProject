@@ -2,8 +2,9 @@ import React from 'react';
 import { useDrag, useDrop } from 'react-dnd';
 import { Paper, Box, Typography, IconButton, Tooltip } from '@mui/material';
 import InfoIcon from '@mui/icons-material/Info';
+import DeleteIcon from '@mui/icons-material/Delete';
 
-const Task = ({ task, index, columnId }) => {
+const Task = ({ task, index, columnId, deleteTask }) => {
     const [{ isDragging }, drag] = useDrag({
         type: 'TASK',
         item: { id: task.id, index, columnId, hoverIndex: index },
@@ -43,11 +44,20 @@ const Task = ({ task, index, columnId }) => {
         >
             <Box display="flex" justifyContent="space-between" alignItems="center">
                 <Typography variant="subtitle1">{task.content}</Typography>
-                <Tooltip title="Task Details">
-                    <IconButton size="small">
-                        <InfoIcon />
-                    </IconButton>
-                </Tooltip>
+                <Box display="flex" alignItems="center">
+                    <Tooltip title="Task Details">
+                        <IconButton size="small">
+                            <InfoIcon />
+                        </IconButton>
+                    </Tooltip>
+                    {columnId === 'column-4' && ( // Only show delete button if task is in the 'Done' column
+                        <Tooltip title="Delete Task">
+                            <IconButton size="small" onClick={() => deleteTask(task.id)}>
+                                <DeleteIcon />
+                            </IconButton>
+                        </Tooltip>
+                    )}
+                </Box>
             </Box>
             <Box mt={1}>
                 <Typography variant="body2" color="textSecondary">

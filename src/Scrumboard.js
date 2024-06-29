@@ -174,6 +174,25 @@ const Scrumboard = () => {
     setNewTask({ ...newTask, subTasks: updatedSubTasks });
   };
 
+  const handleDeleteTask = (taskId) => {
+    const newTasks = { ...data.tasks };
+    delete newTasks[taskId];
+
+    const newColumns = { ...data.columns };
+    Object.keys(newColumns).forEach((columnId) => {
+      const column = newColumns[columnId];
+      column.taskIds = column.taskIds.filter((id) => id !== taskId);
+    });
+
+    const newState = {
+      ...data,
+      tasks: newTasks,
+      columns: newColumns,
+    };
+
+    setData(newState);
+  };
+
   // Calculate progress dynamically based on tasks in each column
   const totalTasks = Object.keys(data.tasks).length;
 
@@ -273,7 +292,7 @@ const Scrumboard = () => {
             </Box>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setIsDialogOpen(false)} color="secondary">
+            <Button onClick={() => setIsDialogOpen(false)} color="primary">
               Cancel
             </Button>
             <Button onClick={handleAddTask} color="primary">
@@ -282,14 +301,18 @@ const Scrumboard = () => {
           </DialogActions>
         </Dialog>
 
-        <Box display="flex" justifyContent="space-around" p={2} flexWrap="wrap">
+        <Box display="flex" p={2} mt={2} justifyContent="center">
           {data.columnOrder.map((columnId) => {
             const column = data.columns[columnId];
             const tasks = column.taskIds.map((taskId) => data.tasks[taskId]);
-
             return (
-                <Box key={column.id} display="flex" flexDirection="column" alignItems="center" m={1}>
-                  <Column column={column} tasks={tasks} moveTask={moveTask} />
+                <Box key={columnId} mx={2}>
+                  <Column
+                      column={column}
+                      tasks={tasks}
+                      moveTask={moveTask}
+                      deleteTask={handleDeleteTask}
+                  />
                 </Box>
             );
           })}
