@@ -15,7 +15,8 @@ import {
 } from '@mui/material';
 import Column from './Column';
 import RemoveIcon from '@mui/icons-material/Remove';
-import AddIcon from "@mui/icons-material/Add";
+import AddIcon from '@mui/icons-material/Add';
+
 const initialData = {
   tasks: {
     'task-1': { id: 'task-1', content: 'Take out the garbage', description: '', estimation: '', subTasks: [] },
@@ -71,6 +72,30 @@ const Scrumboard = () => {
       return;
     }
 
+    // If moving within the same column
+    if (start === finish) {
+      const newTaskIds = Array.from(start.taskIds);
+      newTaskIds.splice(source.index, 1); // Remove the task from its original position
+      newTaskIds.splice(destination.index, 0, source.draggableId); // Insert it in the new position
+
+      const newColumn = {
+        ...start,
+        taskIds: newTaskIds,
+      };
+
+      const newState = {
+        ...data,
+        columns: {
+          ...data.columns,
+          [newColumn.id]: newColumn,
+        },
+      };
+
+      setData(newState);
+      return;
+    }
+
+    // Moving from one column to another
     const startTaskIds = Array.from(start.taskIds);
     startTaskIds.splice(source.index, 1);
     const newStart = {
@@ -257,13 +282,13 @@ const Scrumboard = () => {
           </DialogActions>
         </Dialog>
 
-        <Box display="flex" justifyContent="space-around" p={2}>
+        <Box display="flex" justifyContent="space-around" p={2} flexWrap="wrap">
           {data.columnOrder.map((columnId) => {
             const column = data.columns[columnId];
             const tasks = column.taskIds.map((taskId) => data.tasks[taskId]);
 
             return (
-                <Box key={column.id} display="flex" flexDirection="column" alignItems="center" m={2}>
+                <Box key={column.id} display="flex" flexDirection="column" alignItems="center" m={1}>
                   <Column column={column} tasks={tasks} moveTask={moveTask} />
                 </Box>
             );

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useDrop } from 'react-dnd';
-import { Paper, Typography, Box } from '@mui/material';
+import { Paper, Typography, Box, Divider } from '@mui/material';
 import Task from './Task';
 
 const Column = ({ column, tasks, moveTask }) => {
@@ -23,10 +23,46 @@ const Column = ({ column, tasks, moveTask }) => {
         },
     });
 
+    let borderColor;
+    switch (column.color) {
+        case '#ccc':
+            borderColor = '#555'; // Darker grey for first column
+            break;
+        case '#2196f3':
+            borderColor = '#1976d2'; // Darker blue for second column
+            break;
+        case '#4caf50':
+            borderColor = '#388e3c'; // Darker green for fourth column
+            break;
+        case '#ffc107':
+            borderColor = '#ff9800'; // Darker yellow for third column
+            break;
+        default:
+            borderColor = '#000'; // Default fallback color
+            break;
+    }
+
     return (
-        <Paper ref={drop} elevation={3} style={{ padding: 16, width: 250 }}>
-            <Typography variant="h6">{column.title}</Typography>
-            <Box style={{ minHeight: 100, marginTop: 16 }}>
+        <Paper
+            ref={drop}
+            elevation={6}
+            sx={{
+                borderTop: `4px solid ${borderColor}`,
+                padding: 1,
+                width: 250,
+                backgroundColor: 'background.paper',
+                transition: 'all 0.3s ease-in-out',
+                '&:hover': {
+                    transform: 'scale(1.05)',
+                },
+                borderBottom: `4px solid ${borderColor}`, // Customized border thickness and color
+            }}
+        >
+            <Typography variant="h6" align="center" sx={{ mb: 1 }}>
+                {column.title}
+            </Typography>
+            <Divider sx={{ mb: 1 }} />
+            <Box sx={{ minHeight: 100, mt: 1 }}>
                 {tasks.map((task, index) => (
                     <Task key={task.id} task={task} index={index} columnId={column.id} />
                 ))}
