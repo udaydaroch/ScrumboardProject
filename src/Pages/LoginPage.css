@@ -1,0 +1,14 @@
+.input-label-root {
+    transition: all 0.2s ease-in-out;
+}
+
+.input-label-shrink {
+    transform: translate(0, -1.5em) scale(0.75);
+    transform-origin: top left;
+    color: rgba(0, 0, 0, 0.54);
+}
+
+.Mui-focused .input-label-root,
+.Mui-focused .input-label-shrink {
+    color: #3f51b5;
+}

@@ -12,10 +12,14 @@ import {
   DialogActions,
   Typography,
   IconButton,
+  Grid,
+  Card,
+  CardContent,
 } from '@mui/material';
-import Column from './Column';
+import Column from './BoardComponents/Column';
 import RemoveIcon from '@mui/icons-material/Remove';
 import AddIcon from '@mui/icons-material/Add';
+import DateRangeIcon from '@mui/icons-material/DateRange';
 
 const initialData = {
   tasks: {
@@ -55,6 +59,7 @@ const initialData = {
 
 const Scrumboard = () => {
   const [data, setData] = useState(initialData);
+  const [activeDate, setActiveDate] = useState(new Date());
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newTask, setNewTask] = useState({
     content: '',
@@ -72,11 +77,10 @@ const Scrumboard = () => {
       return;
     }
 
-    // If moving within the same column
     if (start === finish) {
       const newTaskIds = Array.from(start.taskIds);
-      newTaskIds.splice(source.index, 1); // Remove the task from its original position
-      newTaskIds.splice(destination.index, 0, source.draggableId); // Insert it in the new position
+      newTaskIds.splice(source.index, 1);
+      newTaskIds.splice(destination.index, 0, source.draggableId);
 
       const newColumn = {
         ...start,
@@ -95,7 +99,6 @@ const Scrumboard = () => {
       return;
     }
 
-    // Moving from one column to another
     const startTaskIds = Array.from(start.taskIds);
     startTaskIds.splice(source.index, 1);
     const newStart = {
@@ -159,6 +162,22 @@ const Scrumboard = () => {
     });
   };
 
+  const handlePrevDate = () => {
+    const prevDate = new Date(activeDate);
+    prevDate.setDate(activeDate.getDate() - 1);
+    setActiveDate(prevDate);
+  };
+
+  const handleNextDate = () => {
+    const nextDate = new Date(activeDate);
+    nextDate.setDate(activeDate.getDate() + 1);
+    setActiveDate(nextDate);
+  };
+
+  const handleDateChange = (date) => {
+    setActiveDate(date);
+  };
+
   const handleSubTaskChange = (index, value) => {
     const updatedSubTasks = [...newTask.subTasks];
     updatedSubTasks[index] = value;
@@ -174,7 +193,6 @@ const Scrumboard = () => {
     setNewTask({ ...newTask, subTasks: updatedSubTasks });
   };
 
-  // Define the deleteTask function
   const deleteTask = (taskId) => {
     const newTasks = { ...data.tasks };
     delete newTasks[taskId];
@@ -194,7 +212,6 @@ const Scrumboard = () => {
     setData(newState);
   };
 
-  // Calculate progress dynamically based on tasks in each column
   const totalTasks = Object.keys(data.tasks).length;
 
   const getColumnProgress = (columnId) => {
@@ -205,29 +222,41 @@ const Scrumboard = () => {
 
   return (
       <DndProvider backend={HTML5Backend}>
-        <Box display="flex" flexDirection="column" alignItems="center" p={2}>
-          <Button
-              variant="contained"
-              color="primary"
-              startIcon={<AddIcon />}
-              onClick={() => setIsDialogOpen(true)}
-          >
-            Add Task
-          </Button>
-          <Box width="100%" mt={2}>
-            <Box display="flex" justifyContent="center">
-              {data.columnOrder.map((columnId) => (
-                  <Box
-                      key={columnId}
-                      sx={{
-                        backgroundColor: data.columns[columnId].color,
-                        flexBasis: `${getColumnProgress(columnId)}%`,
-                        height: 10,
-                      }}
-                  />
-              ))}
-            </Box>
-          </Box>
+        <Box display="flex" justifyContent="center" alignItems="center" sx={{marginTop:"20px"}}>
+          <Card variant="outlined">
+            <CardContent>
+              <Box display="flex" alignItems="center">
+                <IconButton size="large" onClick={handlePrevDate}>
+                  <Typography variant="h4">←</Typography>
+                </IconButton>
+                <TextField
+                    id="date-picker"
+                    label="Select Date"
+                    type="date"
+                    value={activeDate.toISOString().split('T')[0]}
+                    onChange={(e) => handleDateChange(new Date(e.target.value))}
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                    fullWidth
+                />
+                <IconButton size="large" onClick={handleNextDate}>
+                  <Typography variant="h4">→</Typography>
+                </IconButton>
+              </Box>
+              <Box mt={2}>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    startIcon={<AddIcon />}
+                    onClick={() => setIsDialogOpen(true)}
+                    fullWidth
+                >
+                  Add Task
+                </Button>
+              </Box>
+            </CardContent>
+          </Card>
         </Box>
 
         <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
