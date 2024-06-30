@@ -258,6 +258,23 @@ const Scrumboard = () => {
             </CardContent>
           </Card>
         </Box>
+        <Box width="100%" display="flex" justifyContent="center" mt={2}>
+          <Box width="90%">
+            <Box display="flex" justifyContent="center">
+              {data.columnOrder.map((columnId) => (
+                  <Box
+                      key={columnId}
+                      sx={{
+                        backgroundColor: data.columns[columnId].color,
+                        flexBasis: `${getColumnProgress(columnId)}%`,
+                        height: 10,
+                      }}
+                  />
+              ))}
+            </Box>
+          </Box>
+        </Box>
+
 
         <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
           <DialogTitle>Add a new task</DialogTitle>
