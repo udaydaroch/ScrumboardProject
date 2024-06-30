@@ -1,35 +1,27 @@
 import create from 'zustand';
 
-interface SessionState {
-    token: string | null;
-    userId: number | null;
-    isAdmin: boolean;
-    setSession: (token: string, userId: number, isAdmin: boolean) => void;
-    clearSession: () => void;
-}
-
-const getSessionStorageString = (key: string): string | null => {
+const getSessionStorageString = (key) => {
     const value = window.sessionStorage.getItem(key);
     return value !== null ? JSON.parse(value) : null;
 };
 
-const getSessionStorageNumber = (key: string): number | null => {
+const getSessionStorageNumber = (key) => {
     const value = window.sessionStorage.getItem(key);
     return value !== null ? JSON.parse(value) : null;
 };
 
-const getSessionStorageBoolean = (key: string): boolean => {
+const getSessionStorageBoolean = (key) => {
     const value = window.sessionStorage.getItem(key);
     return value !== null ? JSON.parse(value) : false;
 };
 
-const setSessionStorage = (key: string, value: string | number | boolean) => window.sessionStorage.setItem(key, JSON.stringify(value));
+const setSessionStorage = (key, value) => window.sessionStorage.setItem(key, JSON.stringify(value));
 
-const useSessionStore = create<SessionState>((set) => ({
+const useSessionStore = create((set) => ({
     token: getSessionStorageString('token'),
     userId: getSessionStorageNumber('userId'),
     isAdmin: getSessionStorageBoolean('isAdmin'),
-    setSession: (token: string, userId: number, isAdmin: boolean) => set(() => {
+    setSession: (token, userId, isAdmin) => set(() => {
         setSessionStorage('token', token);
         setSessionStorage('userId', userId);
         setSessionStorage('isAdmin', isAdmin);
