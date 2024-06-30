@@ -1,19 +1,30 @@
 // App.js
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import Navbar from './Pages/Navbar';
 import LoginPage from './Pages/LoginPage';
 import Scrumboard from './Pages/Scrumboard';
 import StaffList from './Pages/StaffList';
 import SetupBoard from './Pages/SetupBoard';
+import useSessionStore from "./zustandStorage/UserSessionInfo";
 
 const App = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [isAdmin, setIsAdmin] = useState(false); // New state to check if the user is admin
+    const [isAdminLogged, setIsAdminLogged] = useState(false); // New state to check if the user is admin
+    const {token, userId, isAdmin} = useSessionStore();
 
-    const handleLogin = (isAdmin) => {
+    useEffect(() => {
+        if (token && userId) {
+            setIsLoggedIn(true);
+            setIsAdminLogged(isAdmin)
+        }
+    }, [token, userId]);
+
+
+    const handleLogin = (isAdminLoggedIn) => {
+        console.log("admin: " + isAdminLoggedIn);
         setIsLoggedIn(true);
-        setIsAdmin(isAdmin);
+        setIsAdminLogged(isAdminLoggedIn);
     };
 
     const handleLogout = () => {
@@ -24,7 +35,7 @@ const App = () => {
         <Router>
             {isLoggedIn ? (
                 <>
-                    <Navbar onLogout={handleLogout} isAdmin={isAdmin} />
+                    <Navbar onLogout={handleLogout} isAdmin={isAdminLogged} />
                     <Routes>
                         <Route path="/scrumboard" element={<Scrumboard />} />
                         <Route path="/stafflist" element={<StaffList />} />
