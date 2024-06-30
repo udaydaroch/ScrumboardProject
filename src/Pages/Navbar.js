@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 const Navbar = ({ onLogout, isAdmin }) => {
     console.log(`Navbar isAdmin: ${isAdmin}`); // Debugging line
     return (
-        <AppBar position="static">
+        <AppBar position="sticky">
             <Toolbar>
                 <Button color="inherit" component={Link} to="/scrumboard">
                     Scrumboard
