@@ -13,7 +13,7 @@ const LoginPage = ({ onLogin }) => {
 
     return (
         <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" height="100vh">
-            <Card style={{ width: '100%', maxWidth: 400, boxShadow: '0px 2px 3px rgba(0, 0, 0, 0.1), 0px 0px 0px 2px rgba(0, 0, 0, 0.05)' }}>
+            <Card style={{ width: '100%', maxWidth: 400, boxShadow: '0px 0px 10px 2px rgba(0, 0, 0, 0.1)' }}>
                 <CardHeader title="Login" />
                 <CardContent>
                     <form onSubmit={handleLogin}>
