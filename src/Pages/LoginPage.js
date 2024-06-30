@@ -13,7 +13,7 @@ const LoginPage = ({ onLogin }) => {
         event.preventDefault();
 
         try {
-            const response = await axios.post('https://scrumboard-project.vercel.app/login', {email, password});
+            const response = await axios.post('https://scrumboard-project.vercel.app/api/login', {email, password});
             const {token, userId, isAdmin} = response.data;
             setSession(token, userId, isAdmin);
             onLogin(isAdmin);
