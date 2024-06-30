@@ -1,14 +1,25 @@
 import React, { useState } from 'react';
 import { Button, TextField, Box, Card, CardContent, CardHeader } from '@mui/material';
+import axios from 'axios';
+import useSessionStore from '../zustandStorage/UserSessionInfo';
 import './LoginPage.css';
 
 const LoginPage = ({ onLogin }) => {
-    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const { setSession } = useSessionStore();
 
-    const handleLogin = (event) => {
+    const handleLogin = async (event) => {
         event.preventDefault();
-        onLogin(username);
+
+        try {
+            const response = await axios.post('https://scrumboard-project.vercel.app/login', {email, password});
+            const {token, userId, isAdmin} = response.data;
+            setSession(token, userId, isAdmin);
+            onLogin(isAdmin);
+        } catch (error) {
+            console.error('Failed to login:', error);
+        }
     };
 
     return (
@@ -18,9 +29,9 @@ const LoginPage = ({ onLogin }) => {
                 <CardContent>
                     <form onSubmit={handleLogin}>
                         <TextField
-                            label="Username"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
+                            label="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             margin="normal"
                             fullWidth
                             autoComplete="off"

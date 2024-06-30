@@ -11,15 +11,13 @@ const App = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isAdmin, setIsAdmin] = useState(false); // New state to check if the user is admin
 
-    const handleLogin = (username) => {
+    const handleLogin = (isAdmin) => {
         setIsLoggedIn(true);
-        console.log(username);
-        setIsAdmin(username === 'admin'); // Set admin status based on the username
+        setIsAdmin(isAdmin);
     };
 
     const handleLogout = () => {
         setIsLoggedIn(false);
-        setIsAdmin(false);
     };
 
     return (
