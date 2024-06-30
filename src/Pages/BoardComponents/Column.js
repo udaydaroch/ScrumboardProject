@@ -50,7 +50,7 @@ const Column = ({ column, tasks, moveTask, deleteTask }) => {
                 borderTop: `4px solid ${borderColor}`,
                 padding: 6,
                 paddingTop:2,
-                width: 280,
+                width: 250,
                 backgroundColor: 'background.paper',
                 transition: 'all 0.3s ease-in-out',
                 '&:hover': {
