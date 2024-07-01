@@ -30,7 +30,6 @@ const App = () => {
     const handleLogout = () => {
         useSessionStore.getState().clearSession();
         setIsLoggedIn(false);
-        setIsAdminLogged(false);
     };
 
     return (
