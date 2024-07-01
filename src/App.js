@@ -1,6 +1,6 @@
 // App.js
 import React, {useEffect, useState} from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Navbar from './Pages/Navbar';
 import LoginPage from './Pages/LoginPage';
 import Scrumboard from './Pages/Scrumboard';
