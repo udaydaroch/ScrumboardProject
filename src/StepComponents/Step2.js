@@ -1,19 +1,35 @@
 import React, { useState } from 'react';
-import { Box, TextField, Button, Card, Typography, Divider, Pagination } from '@mui/material';
-import './Step2.css'; // Import your CSS file
+import { Box, TextField, Button, Card, Typography, Divider, IconButton, List, ListItem, ListItemText, ListItemSecondaryAction } from '@mui/material';
+import { Add as AddIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import './Step2.css';
+import {Pagination} from "@mui/lab";
 
 const Step2 = ({ tasks, onAddTask }) => {
     const [task, setTask] = useState('');
-    const [subTasks, setSubTasks] = useState('');
+    const [subTask, setSubTask] = useState('');
+    const [subTasks, setSubTasks] = useState([]);
     const [estimationTime, setEstimationTime] = useState('');
     const [page, setPage] = useState(1);
     const tasksPerPage = 4;
 
+    const handleAddSubTask = () => {
+        if (subTask) {
+            setSubTasks([...subTasks, subTask]);
+            setSubTask('');
+        }
+    };
+
+    const handleDeleteSubTask = (index) => {
+        const newSubTasks = [...subTasks];
+        newSubTasks.splice(index, 1);
+        setSubTasks(newSubTasks);
+    };
+
     const handleAddTask = () => {
-        if (task && subTasks && estimationTime) {
+        if (task && subTasks.length > 0 && estimationTime) {
             onAddTask({ task, subTasks, estimationTime });
             setTask('');
-            setSubTasks('');
+            setSubTasks([]);
             setEstimationTime('');
         }
     };
@@ -40,13 +56,30 @@ const Step2 = ({ tasks, onAddTask }) => {
                         margin="normal"
                         fullWidth
                     />
-                    <TextField
-                        label="Sub-Tasks"
-                        value={subTasks}
-                        onChange={(e) => setSubTasks(e.target.value)}
-                        margin="normal"
-                        fullWidth
-                    />
+                    <Box display="flex" alignItems="center">
+                        <TextField
+                            label="Add Sub-Task"
+                            value={subTask}
+                            onChange={(e) => setSubTask(e.target.value)}
+                            margin="normal"
+                            fullWidth
+                        />
+                        <IconButton onClick={handleAddSubTask} color="primary">
+                            <AddIcon />
+                        </IconButton>
+                    </Box>
+                    <List>
+                        {subTasks.map((subTask, index) => (
+                            <ListItem key={index}>
+                                <ListItemText primary={subTask} />
+                                <ListItemSecondaryAction>
+                                    <IconButton edge="end" aria-label="delete" onClick={() => handleDeleteSubTask(index)}>
+                                        <DeleteIcon />
+                                    </IconButton>
+                                </ListItemSecondaryAction>
+                            </ListItem>
+                        ))}
+                    </List>
                     <TextField
                         label="Estimation Time"
                         value={estimationTime}
@@ -65,13 +98,20 @@ const Step2 = ({ tasks, onAddTask }) => {
             {/* Task List Card */}
             <Card className="taskListCard">
                 <Typography variant="h6" gutterBottom style={{ textAlign: "center" }}>Task List</Typography>
-                <Divider></Divider>
+                <Divider />
                 <Box display="flex" flexDirection="column" alignItems="flex-start">
                     {currentTasks.map((task, index) => (
                         <Card key={index} className="taskCard">
                             <Box p={2}>
                                 <Typography variant="subtitle1">{task.task}</Typography>
-                                <Typography variant="body2">Sub-Tasks: {task.subTasks}</Typography>
+                                <Typography variant="body2">Sub-Tasks:</Typography>
+                                <List>
+                                    {task.subTasks.map((subTask, subIndex) => (
+                                        <ListItem key={subIndex}>
+                                            <ListItemText primary={subTask} />
+                                        </ListItem>
+                                    ))}
+                                </List>
                                 <Typography variant="body2">Estimation: {task.estimationTime}</Typography>
                             </Box>
                         </Card>
