@@ -18,7 +18,7 @@ const App = () => {
             setIsLoggedIn(true);
             setIsAdminLogged(isAdmin)
         }
-    }, [token, userId, isAdmin]);
+    }, [token, userId]);
 
 
     const handleLogin = (isAdminLoggedIn) => {
