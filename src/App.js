@@ -18,7 +18,7 @@ const App = () => {
             setIsLoggedIn(true);
             setIsAdminLogged(isAdmin)
         }
-    }, [token, userId, isAdmin]);
+    }, [token, userId]);
 
 
     const handleLogin = (isAdminLoggedIn) => {
@@ -28,9 +28,7 @@ const App = () => {
     };
 
     const handleLogout = () => {
-        useSessionStore.getState().clearSession();
         setIsLoggedIn(false);
-        setIsAdminLogged(false);
     };
 
     return (
