@@ -1,23 +1,34 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import { Button, TextField, Box, Card, CardContent, CardHeader } from '@mui/material';
 import axios from 'axios';
 import useSessionStore from '../zustandStorage/UserSessionInfo';
 import './LoginPage.css';
+import { useNavigate } from 'react-router-dom';
+
 
 const LoginPage = ({ onLogin }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const { setSession } = useSessionStore();
+    const { token, userId, isAdmin } = useSessionStore();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if ((token && userId)) {
+            navigate('/scrumboard');
+        }
+    }, [token, userId, isAdmin]);
 
     const handleLogin = async (event) => {
         event.preventDefault();
 
         try {
-            const response = await axios.post('https://scrumboard-project-back-end.vercel.app/login', {email, password});
+            const response = await axios.post('http://localhost:5432/login', {email, password});
             const {token, userId, isAdmin} = response.data;
             console.log(token, userId, isAdmin);
             setSession(token, userId, isAdmin);
             onLogin(isAdmin);
+            navigate('/scrumboard');
         } catch (error) {
             console.error('Failed to login:', error);
         }

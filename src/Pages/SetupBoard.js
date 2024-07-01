@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import { Box, Button, Stepper, Step, StepLabel } from '@mui/material';
 import Step1 from '../StepComponents/Step1';
 import Step2 from '../StepComponents/Step2';
 import Step3 from '../StepComponents/Step3';
+import useSessionStore from "../zustandStorage/UserSessionInfo";
+import {useNavigate} from "react-router-dom";
 
 const steps = ['Add Date and Team', 'Add Tasks', 'Allow Team to Create Tasks'];
 
@@ -14,6 +16,15 @@ const SetupBoard = () => {
         tasks: [],
         allowCreateTasks: false,
     });
+
+    const {userId,token, isAdmin} = useSessionStore();
+    const navigate = useNavigate();
+    useEffect (() => {
+        if (!token || !userId || !isAdmin ) {
+            navigate('/scrumboard');
+        }
+
+    }, [token, userId]);
 
     const handleNext = () => {
         setActiveStep((prevActiveStep) => prevActiveStep + 1);

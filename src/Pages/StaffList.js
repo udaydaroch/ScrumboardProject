@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
     Box,
     TextField,
@@ -9,6 +9,8 @@ import {
     useTheme,
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
+import useSessionStore from "../zustandStorage/UserSessionInfo";
+import {useNavigate} from "react-router-dom";
 
 const initialStaffData = [
     {
@@ -50,6 +52,14 @@ const StaffList = () => {
             staff.fullName.toLowerCase().includes(filterFullName.toLowerCase()) &&
             staff.tasksPicked.toLowerCase().includes(filterTasks.toLowerCase())
     );
+
+    const {userId,token} = useSessionStore();
+    const navigate = useNavigate();
+    useEffect (() => {
+        if (!token || !userId) {
+            navigate('/login');
+        }
+    }, [token, userId]);
 
     const rows = filteredStaffData.map((staff) => ({
         ...staff,

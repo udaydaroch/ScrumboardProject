@@ -1,26 +1,84 @@
-import React from 'react';
-import { AppBar, Toolbar, Button } from '@mui/material';
+import React, { useState } from 'react';
+import { AppBar, Button, Toolbar, IconButton, Drawer, List, ListItem, useMediaQuery, useTheme } from '@mui/material';
 import { Link } from 'react-router-dom';
+import MenuIcon from '@mui/icons-material/Menu';
 
-const Navbar = ({ onLogout, isAdmin }) => {
-    console.log(`Navbar isAdmin: ${isAdmin}`); // Debugging line
+const Navbar = ({ onPageChange, onLogout, isLoggedIn, isAdmin }) => {
+    const [drawerOpen, setDrawerOpen] = useState(false);
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+    const handleLinkClick = (page) => {
+        onPageChange(page);
+        setDrawerOpen(false);
+    };
+
+    const handleLogout = () => {
+        console.log("logout");
+        onLogout();
+        setDrawerOpen(false);
+    };
+
+    const menuItems = isLoggedIn
+        ? [
+            { text: 'Scrumboard', path: '/scrumboard' },
+            { text: 'Staff List', path: '/stafflist' },
+            { text: 'Setup Board', path: '/setupboard', isAdmin: true },
+            { text: 'Logout', path: '/login', onClick: handleLogout },
+        ]
+        : [
+            { text: 'Login', path: '/login' }
+        ];
+
     return (
         <AppBar position="sticky">
             <Toolbar>
-                <Button color="inherit" component={Link} to="/scrumboard">
-                    Scrumboard
-                </Button>
-                <Button color="inherit" component={Link} to="/stafflist">
-                    Staff List
-                </Button>
-                {isAdmin && (
-                    <Button color="inherit" component={Link} to="/setupboard">
-                        Setup Board
-                    </Button>
+                {isMobile ? (
+                    <>
+                        <IconButton edge="start" color="inherit" onClick={() => setDrawerOpen(true)}>
+                            <MenuIcon />
+                        </IconButton>
+                        <Drawer anchor="left" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
+                            <List>
+                                {menuItems.map((item, index) => {
+                                    if (item.isAdmin && !isAdmin) {
+                                        return null;
+                                    }
+                                    return (
+                                        <ListItem
+                                            key={index}
+                                            button
+                                            component={Link}
+                                            to={item.path}
+                                            onClick={item.onClick || (() => handleLinkClick(item.text))}
+                                        >
+                                            {item.text}
+                                        </ListItem>
+                                    );
+                                })}
+                            </List>
+                        </Drawer>
+                    </>
+                ) : (
+                    <>
+                        {menuItems.map((item, index) => {
+                            if (item.isAdmin && !isAdmin) {
+                                return null;
+                            }
+                            return (
+                                <Button
+                                    key={index}
+                                    color="inherit"
+                                    component={Link}
+                                    to={item.path}
+                                    onClick={item.onClick || (() => handleLinkClick(item.text))}
+                                >
+                                    {item.text}
+                                </Button>
+                            );
+                        })}
+                    </>
                 )}
-                <Button color="inherit" onClick={onLogout}>
-                    Logout
-                </Button>
             </Toolbar>
         </AppBar>
     );

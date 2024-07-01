@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import {
@@ -19,7 +19,8 @@ import {
 import Column from './BoardComponents/Column';
 import RemoveIcon from '@mui/icons-material/Remove';
 import AddIcon from '@mui/icons-material/Add';
-import DateRangeIcon from '@mui/icons-material/DateRange';
+import useSessionStore from "../zustandStorage/UserSessionInfo";
+import {useNavigate} from "react-router-dom";
 
 const initialData = {
   tasks: {
@@ -68,7 +69,13 @@ const Scrumboard = () => {
     column: 'column-1',
     subTasks: [],
   });
-
+  const {userId,token} = useSessionStore();
+  const navigate = useNavigate();
+  useEffect (() => {
+    if (!token || !userId) {
+      navigate('/login');
+    }
+  }, [token, userId]);
   const moveTask = (source, destination) => {
     const start = data.columns[source.droppableId];
     const finish = data.columns[destination.droppableId];
