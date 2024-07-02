@@ -75,6 +75,7 @@ const Scrumboard = () => {
       navigate('/login');
     } else {
       if (params.id && isAdmin) {
+        //https://scrumboard-project-back-end.vercel.app
         axios.get(`https://scrumboard-project-back-end.vercel.app/getBoard/${params.id}`, {
           headers: {
             'X-Authorization': token,
