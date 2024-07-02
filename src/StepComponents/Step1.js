@@ -17,22 +17,21 @@ import {
 import axios from "axios";
 import useSessionStore from "../zustandStorage/UserSessionInfo";
 
-const Step1 = ({ data, onDataChange }) => {
+const Step1 = ({ data = {}, onDataChange }) => {
     const [teams, setTeams] = useState([]);
     const [initialLoad, setInitialLoad] = useState(true);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
-    const [userSession] = useSessionStore();
+   const {userId, token} = useSessionStore();
     useEffect(() => {
         const fetchTeams = async () => {
             try {
-                const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/teams`,
-                    {
-                        headers: {
-                            'X-Authorization': userSession.token
-                        }
+                console.log(token);
+                const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/teams`, {
+                    headers: {
+                        'X-Authorization': token
                     }
-                );
+                });
                 const fetchedTeams = response.data.map(team => ({
                     id: team.id,
                     name: team.name
@@ -51,9 +50,8 @@ const Step1 = ({ data, onDataChange }) => {
                 setInitialLoad(false);
             }
         };
-
         fetchTeams();
-    }, [data.team, onDataChange]);
+    }, []);
 
     const handleChange = (e) => {
         onDataChange({ [e.target.name]: e.target.value });
@@ -75,7 +73,7 @@ const Step1 = ({ data, onDataChange }) => {
                     <FormControlLabel
                         control={
                             <Switch
-                                checked={data.allowCreateTasks}
+                                checked={data.allowCreateTasks || false}
                                 onChange={handleSwitchChange}
                                 name="allowCreateTasks"
                             />
@@ -88,7 +86,7 @@ const Step1 = ({ data, onDataChange }) => {
                         label="Date"
                         name="date"
                         type="date"
-                        value={data.date}
+                        value={data.date || ''}
                         onChange={handleChange}
                         margin="normal"
                         fullWidth
@@ -101,7 +99,7 @@ const Step1 = ({ data, onDataChange }) => {
                         <Select
                             labelId="team-label"
                             name="team"
-                            value={data.team}
+                            value={data.team || ''}
                             onChange={handleChange}
                         >
                             {teams.map((team) => (
