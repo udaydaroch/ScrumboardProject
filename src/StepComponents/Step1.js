@@ -26,7 +26,7 @@ const Step1 = ({ data, onDataChange }) => {
     useEffect(() => {
         const fetchTeams = async () => {
             try {
-                const response = await axios.get(`https://${process.env.REACT_APP_URL}/teams`,
+                const response = await axios.get(`https://${process.env.REACT_APP_MYURL}/teams`,
                     {
                         headers: {
                             'X-Authorization': userSession.token
