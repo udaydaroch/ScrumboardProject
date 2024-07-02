@@ -7,7 +7,7 @@ import Scrumboard from './Pages/Scrumboard';
 import StaffList from './Pages/StaffList';
 import SetupBoard from './Pages/SetupBoard';
 import useSessionStore from "./zustandStorage/UserSessionInfo";
-import { Snackbar } from "@mui/material";
+import axios from "axios";
 
 const App = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -31,18 +31,15 @@ const App = () => {
         setIsAdminLogged(isAdminLoggedIn);
     };
 
-    const [snackbarOpen, setSnackbarOpen] = useState(false);
-    const [snackbarMessage, setSnackbarMessage] = useState('');
-    const [snackbarKey, setSnackbarKey] = useState(0);
-    const handleSnackbar = (message) => {
-        setSnackbarOpen(false);
-        setSnackbarMessage(message);
-        setSnackbarKey(prevKey => prevKey + 1);
-        setSnackbarOpen(true);
-    };
+
 
     const handleLogout = () => {
         useSessionStore.getState().clearSession();
+        axios.post(`${process.env.REACT_APP_URL}/logout`, {
+            header : {
+                'X-Authorization': token
+            }
+        });
         setIsLoggedIn(false);
         setIsAdminLogged(false);
         setCurrentPage("Scrumboard")
@@ -54,19 +51,14 @@ const App = () => {
             <Navbar onPageChange={handlePageChange} onLogout={handleLogout} isLoggedIn={isLoggedIn} isAdmin={isAdminLogged} />
             <Routes>
                 <Route path="/scrumboard" element={<Scrumboard />} />
+                <Route path="/scrumboard/:id" element={<Scrumboard />} />
                 <Route path="/stafflist" element={<StaffList />} />
                 {isAdminLogged && <Route path="/setupboard" element={<SetupBoard />} />}
                 <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
-                <Route path="/*" element={<Scrumboard />} />
+                <Route path="*" element={<Scrumboard />} />
                 <Route path="/" element={<Scrumboard />} />
             </Routes>
         </Router>
-        <Snackbar
-            key={snackbarKey}
-            open={snackbarOpen}
-            autoHideDuration={6000}
-            onClose={() => setSnackbarOpen(false)}
-            message={snackbarMessage}/>
         </div>
     );
 }

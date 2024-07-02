@@ -21,15 +21,17 @@ const useSessionStore = create((set) => ({
     token: getSessionStorageString('token'),
     userId: getSessionStorageNumber('userId'),
     isAdmin: getSessionStorageBoolean('isAdmin'),
-    setSession: (token, userId, isAdmin) => set(() => {
+    teamId: getSessionStorageNumber('teamId'), // Added teamId
+    setSession: (token, userId, isAdmin, teamId) => set(() => { // Added teamId
         setSessionStorage('token', token);
         setSessionStorage('userId', userId);
         setSessionStorage('isAdmin', isAdmin);
-        return { token, userId, isAdmin };
+        setSessionStorage('teamId', teamId); // Added teamId
+        return { token, userId, isAdmin, teamId }; // Added teamId
     }),
     clearSession: () => set(() => {
         window.sessionStorage.clear();
-        return { token: null, userId: null, isAdmin: false };
+        return { token: null, userId: null, isAdmin: false, teamId: null }; // Added teamId
     })
 }));
 

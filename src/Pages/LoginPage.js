@@ -23,10 +23,10 @@ const LoginPage = ({ onLogin }) => {
         event.preventDefault();
 
         try {
-            const response = await axios.post('https://scrumboard-project-back-end.vercel.app/login', {email, password});
-            const {token, userId, isAdmin} = response.data;
+            const response = await axios.post(`${process.env.REACT_APP_URL}/login`, {email, password});
+            const {token, userId, isAdmin, teamId} = response.data;
             console.log(token, userId, isAdmin);
-            setSession(token, userId, isAdmin);
+            setSession(token, userId, isAdmin, teamId);
             onLogin(isAdmin);
             navigate('/scrumboard');
         } catch (error) {

@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import {
@@ -20,20 +20,15 @@ import Column from './BoardComponents/Column';
 import RemoveIcon from '@mui/icons-material/Remove';
 import AddIcon from '@mui/icons-material/Add';
 import useSessionStore from "../zustandStorage/UserSessionInfo";
-import {useNavigate} from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
+import axios from "axios";
 
 const initialData = {
-  tasks: {
-    'task-1': { id: 'task-1', content: 'Take out the garbage', description: '', estimation: '', subTasks: [] },
-    'task-2': { id: 'task-2', content: 'Watch my favorite show', description: '', estimation: '', subTasks: [] },
-    'task-3': { id: 'task-3', content: 'Charge my phone', description: '', estimation: '', subTasks: [] },
-    'task-4': { id: 'task-4', content: 'Cook dinner', description: '', estimation: '', subTasks: [] },
-  },
   columns: {
     'column-1': {
       id: 'column-1',
       title: 'To Do',
-      taskIds: ['task-1', 'task-2', 'task-3', 'task-4'],
+      taskIds: [],
       color: '#ccc', // Grey
     },
     'column-2': {
@@ -59,6 +54,7 @@ const initialData = {
 };
 
 const Scrumboard = () => {
+  const [tasks, setTasks] = useState({});
   const [data, setData] = useState(initialData);
   const [activeDate, setActiveDate] = useState(new Date());
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -69,13 +65,44 @@ const Scrumboard = () => {
     column: 'column-1',
     subTasks: [],
   });
-  const {userId,token} = useSessionStore();
+  const [isEditable, setIsEditable] = useState(true);
+  const { userId, token,isAdmin,teamId} = useSessionStore();
   const navigate = useNavigate();
-  useEffect (() => {
+  const params = useParams();
+
+  useEffect(() => {
     if (!token || !userId) {
       navigate('/login');
+    } else {
+      if (params.id && isAdmin) {
+        axios.get(`${process.env.REACT_APP_URL}/getBoard/${params.id}`, {
+          headers: {
+            'X-Authorization': token,
+          }
+        })
+            .then(response => {
+              //setData(response.data);
+              setIsEditable(response.data.isEditable);
+            })
+            .catch(error => {
+              console.error('Error fetching scrumboard data:', error);
+            });
+      } else {
+        console.log(token);
+        axios.get(`${process.env.REACT_APP_URL}/team/${teamId}/getBoardByDate/${activeDate.toISOString().split('T')[0]}`, {
+          headers: {
+            'X-Authorization': token,
+          }
+        })
+            .then(response => {
+              setIsEditable(response.data.isEditable);
+            })
+            .catch(error => {
+              console.error('Error fetching scrumboard data:', error);
+            });
+      }
     }
-  }, [token, userId]);
+  }, [token, userId, navigate, params.id, activeDate]);
   const moveTask = (source, destination) => {
     const start = data.columns[source.droppableId];
     const finish = data.columns[destination.droppableId];
@@ -84,81 +111,64 @@ const Scrumboard = () => {
       return;
     }
 
-    if (start === finish) {
-      const newTaskIds = Array.from(start.taskIds);
-      newTaskIds.splice(source.index, 1);
-      newTaskIds.splice(destination.index, 0, source.draggableId);
-
-      const newColumn = {
-        ...start,
-        taskIds: newTaskIds,
-      };
-
-      const newState = {
-        ...data,
-        columns: {
-          ...data.columns,
-          [newColumn.id]: newColumn,
-        },
-      };
-
-      setData(newState);
-      return;
-    }
-
-    const startTaskIds = Array.from(start.taskIds);
-    startTaskIds.splice(source.index, 1);
+    const newStartTaskIds = Array.from(start.taskIds);
+    newStartTaskIds.splice(source.index, 1);
     const newStart = {
       ...start,
-      taskIds: startTaskIds,
+      taskIds: newStartTaskIds,
     };
 
-    const finishTaskIds = Array.from(finish.taskIds);
-    finishTaskIds.splice(destination.index, 0, source.draggableId);
+    const newFinishTaskIds = Array.from(finish.taskIds);
+    newFinishTaskIds.splice(destination.index, 0, source.draggableId);
     const newFinish = {
       ...finish,
-      taskIds: finishTaskIds,
+      taskIds: newFinishTaskIds,
     };
 
-    const newState = {
+    const newColumns = {
+      ...data.columns,
+      [newStart.id]: newStart,
+      [newFinish.id]: newFinish,
+    };
+
+    setData({
       ...data,
-      columns: {
-        ...data.columns,
-        [newStart.id]: newStart,
-        [newFinish.id]: newFinish,
-      },
-    };
-
-    setData(newState);
+      columns: newColumns,
+    });
   };
 
   const handleAddTask = () => {
     const newTaskId = `task-${Date.now()}`;
-    const task = { id: newTaskId, ...newTask };
+    const task = {
+      id: newTaskId,
+      content: newTask.content,
+      description: newTask.description,
+      estimation: newTask.estimation,
+      subTasks: newTask.subTasks,
+    };
 
     const newTasks = {
-      ...data.tasks,
+      ...tasks,
       [newTaskId]: task,
     };
 
     const column = data.columns[newTask.column];
     const newTaskIds = [...column.taskIds, newTaskId];
 
-    const newColumn = {
-      ...column,
-      taskIds: newTaskIds,
-    };
-
-    const newState = {
-      ...data,
-      tasks: newTasks,
-      columns: {
-        ...data.columns,
-        [newColumn.id]: newColumn,
+    const newColumns = {
+      ...data.columns,
+      [newTask.column]: {
+        ...column,
+        taskIds: newTaskIds,
       },
     };
 
-    setData(newState);
+    setData({
+      ...data,
+      columns: newColumns,
+    });
+
+    setTasks(newTasks);
     setIsDialogOpen(false);
     setNewTask({
       content: '',
@@ -201,7 +211,7 @@ const Scrumboard = () => {
   };
 
   const deleteTask = (taskId) => {
-    const newTasks = { ...data.tasks };
+    const newTasks = { ...tasks };
     delete newTasks[taskId];
 
     const newColumns = { ...data.columns };
@@ -210,16 +220,14 @@ const Scrumboard = () => {
       column.taskIds = column.taskIds.filter((id) => id !== taskId);
     });
 
-    const newState = {
+    setTasks(newTasks);
+    setData({
       ...data,
-      tasks: newTasks,
       columns: newColumns,
-    };
-
-    setData(newState);
+    });
   };
 
-  const totalTasks = Object.keys(data.tasks).length;
+  const totalTasks = Object.keys(tasks).length;
 
   const getColumnProgress = (columnId) => {
     const column = data.columns[columnId];
@@ -229,7 +237,7 @@ const Scrumboard = () => {
 
   return (
       <DndProvider backend={HTML5Backend}>
-        <Box display="flex" justifyContent="center" alignItems="center" sx={{marginTop:"20px"}}>
+        <Box display="flex" justifyContent="center" alignItems="center" sx={{ marginTop: "20px" }}>
           <Card variant="outlined">
             <CardContent>
               <Box display="flex" alignItems="center">
@@ -252,15 +260,17 @@ const Scrumboard = () => {
                 </IconButton>
               </Box>
               <Box mt={2}>
-                <Button
-                    variant="contained"
-                    color="primary"
-                    startIcon={<AddIcon />}
-                    onClick={() => setIsDialogOpen(true)}
-                    fullWidth
-                >
-                  Add Task
-                </Button>
+                  <Button
+                      variant="contained"
+                      color="primary"
+                      startIcon={<AddIcon />}
+                      onClick={() => setIsDialogOpen(true)}
+                      fullWidth
+                      disabled={!isEditable} // Disable button if isEditable is false
+                  >
+                      Add Task
+                  </Button>
+
               </Box>
             </CardContent>
           </Card>
@@ -281,7 +291,6 @@ const Scrumboard = () => {
             </Box>
           </Box>
         </Box>
-
 
         <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
           <DialogTitle>Add a new task</DialogTitle>
@@ -355,11 +364,11 @@ const Scrumboard = () => {
         <Box display="flex" justifyContent="center" p={2} flexWrap="wrap">
           {data.columnOrder.map((columnId) => {
             const column = data.columns[columnId];
-            const tasks = column.taskIds.map((taskId) => data.tasks[taskId]);
+            const columnTasks = column.taskIds.map((taskId) => tasks[taskId]);
 
             return (
                 <Box key={column.id} display="flex" flexDirection="column" alignItems="center" m={1}>
-                  <Column column={column} tasks={tasks} moveTask={moveTask} deleteTask={deleteTask} />
+                  <Column column={column} tasks={columnTasks} moveTask={moveTask} deleteTask={deleteTask} />
                 </Box>
             );
           })}

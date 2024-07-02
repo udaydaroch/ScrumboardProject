@@ -1,12 +1,14 @@
-import React, {useEffect, useState} from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Button, Stepper, Step, StepLabel } from '@mui/material';
 import Step1 from '../StepComponents/Step1';
 import Step2 from '../StepComponents/Step2';
-import Step3 from '../StepComponents/Step3';
 import useSessionStore from "../zustandStorage/UserSessionInfo";
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 
-const steps = ['Add Date and Team', 'Add Tasks', 'Allow Team to Create Tasks'];
+const steps = ['Add Date and Team', 'Add Tasks'];
 
 const SetupBoard = () => {
     const [activeStep, setActiveStep] = useState(0);
@@ -16,26 +18,63 @@ const SetupBoard = () => {
         tasks: [],
         allowCreateTasks: false,
     });
+    const [validationError, setValidationError] = useState(false); // State for validation error
 
-    const {userId,token, isAdmin} = useSessionStore();
+    const { userId, token, isAdmin } = useSessionStore();
     const navigate = useNavigate();
-    useEffect (() => {
-        if (!token || !userId || !isAdmin ) {
+
+    useEffect(() => {
+        if (!token || !userId || !isAdmin) {
             navigate('/scrumboard');
         }
+    }, [token, userId, isAdmin, navigate]);
 
-    }, [token, userId]);
+    const [snackbarOpen, setSnackbarOpen] = useState(false); // State for Snackbar
+    const [snackbarMessage, setSnackbarMessage] = useState(''); // State for Snackbar message
+
+    const handleSnackbar = (message) => {
+        setSnackbarMessage(message);
+        setSnackbarOpen(true);
+    };
+
+    const validateStep = (step) => {
+        if (step === 0) {
+            return formData.date && formData.team;
+        } else if (step === 1) {
+            return formData.tasks.length > 0;
+        }
+        return true;
+    };
 
     const handleNext = () => {
-        setActiveStep((prevActiveStep) => prevActiveStep + 1);
+        // Validation check before proceeding to the next step
+        if (validateStep(activeStep)) {
+            setActiveStep(prevActiveStep => prevActiveStep + 1);
+            setValidationError(false); // Reset validation error state
+        } else {
+            setValidationError(true);
+            if (activeStep === 0) {
+                handleSnackbar('Please select both date and team.');
+            } else if (activeStep === 1) {
+                handleSnackbar('Please add at least one task.');
+            }
+        }
     };
 
     const handleBack = () => {
-        setActiveStep((prevActiveStep) => prevActiveStep - 1);
+        setActiveStep(prevActiveStep => prevActiveStep - 1);
     };
 
     const handleStepClick = (stepIndex) => {
-        setActiveStep(stepIndex);
+        if (stepIndex < activeStep) {
+            setActiveStep(stepIndex);
+        } else if (validateStep(activeStep)) {
+            setActiveStep(stepIndex);
+            setValidationError(false);
+        } else {
+            setValidationError(true);
+            handleSnackbar(stepIndex === 0 ? 'Please select both date and team.' : 'Please add at least one task.');
+        }
     };
 
     const handleFormDataChange = (newData) => {
@@ -44,6 +83,66 @@ const SetupBoard = () => {
 
     const handleAddTask = (task) => {
         setFormData({ ...formData, tasks: [...formData.tasks, task] });
+    };
+
+    const handleDeleteTask = (taskToDelete) => {
+        setFormData({
+            ...formData,
+            tasks: formData.tasks.filter(task => task !== taskToDelete)
+        });
+    };
+
+    const handleEditTask = (editedTask) => {
+        setFormData({
+            ...formData,
+            tasks: formData.tasks.map(task => task === editedTask.oldTask ? editedTask.newTask : task)
+        });
+    };
+
+    const handleSubmit = () => {
+        const { date, team, tasks, allowCreateTasks } = formData;
+
+        if (!tasks || tasks.length === 0) {
+            console.log(formData)
+            handleSnackbar('Please add at least one task before submitting.');
+            return;
+        }
+
+        const scrumboardData = {
+            scrumboard: {
+                date: date,
+                team_id: team,
+                isEditable: allowCreateTasks,
+                tasks: tasks.map((task, index) => ({
+                    title: task.task,
+                    estimation_time: task.estimationTime,
+                    created_by: userId,
+                    position_on_board: index + 1,
+                    num_subtasks: task.subTasks.length,
+                    subtasks: task.subTasks.map(subtask => ({
+                        title: subtask.title,
+                        description: subtask.description,
+                        completed: subtask.completed || false
+                    }))
+                })),
+            }
+        };
+        if (scrumboardData){
+            console.log(scrumboardData)
+        }
+        axios.post(`${process.env.REACT_APP_URL}/setUpBoard`, scrumboardData, {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+            .then(response => {
+                console.log('Success:', response.data);
+                navigate('/scrumboard/' + response.data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                handleSnackbar('Error submitting board setup.');
+            });
     };
 
     return (
@@ -73,15 +172,35 @@ const SetupBoard = () => {
                 <Button
                     variant="contained"
                     color="primary"
-                    onClick={handleNext}
+                    onClick={activeStep === steps.length - 1 ? handleSubmit : handleNext}
                 >
                     {activeStep === steps.length - 1 ? 'Finish' : 'Next'}
                 </Button>
             </Box>
-            {activeStep === 0 && <Step1 data={formData} onDataChange={handleFormDataChange} />}
-            {activeStep === 1 && <Step2 tasks={formData.tasks} onAddTask={handleAddTask} />}
-            {activeStep === 2 && <Step3 data={formData} onDataChange={handleFormDataChange} />}
-
+            {activeStep === 0 && (
+                <Step1
+                    data={formData}
+                    onDataChange={handleFormDataChange}
+                    validationError={validationError} // Pass validation error state to Step1 component
+                />
+            )}
+            {activeStep === 1 && (
+                <Step2
+                    tasks={formData.tasks}
+                    onAddTask={handleAddTask}
+                    onDeleteTask={handleDeleteTask}
+                    onEditTask={handleEditTask}
+                />
+            )}
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={6000}
+                onClose={() => setSnackbarOpen(false)}
+            >
+                <Alert onClose={() => setSnackbarOpen(false)} severity="error" sx={{ width: '100%' }}>
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
         </Box>
     );
 };
