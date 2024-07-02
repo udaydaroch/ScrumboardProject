@@ -75,7 +75,7 @@ const Scrumboard = () => {
       navigate('/login');
     } else {
       if (params.id && isAdmin) {
-        axios.get(`${process.env.REACT_APP_URL}/getBoard/${params.id}`, {
+        axios.get(`https://${process.env.REACT_APP_URL}/getBoard/${params.id}`, {
           headers: {
             'X-Authorization': token,
           }
@@ -89,7 +89,7 @@ const Scrumboard = () => {
             });
       } else {
         console.log(token);
-        axios.get(`${process.env.REACT_APP_URL}/team/${teamId}/getBoardByDate/${activeDate.toISOString().split('T')[0]}`, {
+        axios.get(`https://${process.env.REACT_APP_URL}/team/${teamId}/getBoardByDate/${activeDate.toISOString().split('T')[0]}`, {
           headers: {
             'X-Authorization': token,
           }

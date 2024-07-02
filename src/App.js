@@ -35,7 +35,7 @@ const App = () => {
 
     const handleLogout = () => {
         useSessionStore.getState().clearSession();
-        axios.post(`${process.env.REACT_APP_URL}/logout`, {
+        axios.post(`https://${process.env.REACT_APP_URL}/logout`, {
             header : {
                 'X-Authorization': token
             }
