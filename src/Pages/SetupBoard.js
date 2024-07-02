@@ -130,7 +130,7 @@ const SetupBoard = () => {
         if (scrumboardData){
             console.log(scrumboardData)
         }
-        axios.post(`https://${process.env.REACT_APP_MYURL}/setUpBoard`, scrumboardData, {
+        axios.post(`https://scrumboard-project-back-end.vercel.app/setUpBoard`, scrumboardData, {
             headers: {
                 'Content-Type': 'application/json',
             },

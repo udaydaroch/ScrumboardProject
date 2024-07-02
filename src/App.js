@@ -35,7 +35,7 @@ const App = () => {
 
     const handleLogout = () => {
         useSessionStore.getState().clearSession();
-        axios.post(`https://${process.env.REACT_APP_MYURL}/logout`, {
+        axios.post(`https://scrumboard-project-back-end.vercel.app/logout`, {
             header : {
                 'X-Authorization': token
             }

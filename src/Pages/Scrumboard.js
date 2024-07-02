@@ -75,7 +75,7 @@ const Scrumboard = () => {
       navigate('/login');
     } else {
       if (params.id && isAdmin) {
-        axios.get(`https://${process.env.REACT_APP_MYURL}/getBoard/${params.id}`, {
+        axios.get(`https://scrumboard-project-back-end.vercel.app/getBoard/${params.id}`, {
           headers: {
             'X-Authorization': token,
           }
@@ -89,7 +89,7 @@ const Scrumboard = () => {
             });
       } else {
         console.log(token);
-        axios.get(`https://${process.env.REACT_APP_MYURL}/team/${teamId}/getBoardByDate/${activeDate.toISOString().split('T')[0]}`, {
+        axios.get(`https://scrumboard-project-back-end.vercel.app/team/${teamId}/getBoardByDate/${activeDate.toISOString().split('T')[0]}`, {
           headers: {
             'X-Authorization': token,
           }
