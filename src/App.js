@@ -36,7 +36,7 @@ const App = () => {
     const handleLogout = () => {
         //https://scrumboard-project-back-end.vercel.app
         console.log(token);
-        axios.post(`${process.env.REACT_APP_API_BASE_URL}/logout`,{} ,{
+        axios.post(`https://scrumboard-project-back-end.vercel.app/logout`,{} ,{
             headers : {
                 'X-Authorization': token
             }

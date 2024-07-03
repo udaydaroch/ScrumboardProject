@@ -23,8 +23,8 @@ const LoginPage = ({ onLogin }) => {
         event.preventDefault();
 
         try {
-            //https://scrumboard-project-back-end.vercel.app
-            const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/login`, {email, password});
+
+            const response = await axios.post(`https://scrumboard-project-back-end.vercel.app/login`, {email, password});
             console.log(response.data)
             const {token, userId, isAdmin, teamId} = response.data;
             console.log(token, userId, isAdmin);
