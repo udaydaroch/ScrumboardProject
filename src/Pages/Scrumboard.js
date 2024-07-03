@@ -87,7 +87,7 @@ const Scrumboard = () => {
             .catch(error => {
               console.error('Error fetching scrumboard data:', error);
             });
-      } if(params.id && !isAdmin) {
+      } if(!isAdmin) {
         axios.get(`https://scrumboard-project-back-end.vercel.app/team/${teamId}/getBoardByDate/${activeDate.toISOString().split('T')[0]}`, {
           headers: {
             'X-Authorization': token,
