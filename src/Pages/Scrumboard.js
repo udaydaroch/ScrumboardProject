@@ -75,28 +75,29 @@ const Scrumboard = () => {
       navigate('/login');
     } else {
       if (params.id && isAdmin) {
-        //https://scrumboard-project-back-end.vercel.app
         axios.get(`${process.env.REACT_APP_API_BASE_URL}/getBoard/${params.id}`, {
           headers: {
             'X-Authorization': token,
           }
         })
             .then(response => {
-              //setData(response.data);
               setIsEditable(response.data.isEditable);
+              processData(response.data.tasks);
             })
             .catch(error => {
               console.error('Error fetching scrumboard data:', error);
             });
       } else {
-        console.log(token);
         axios.get(`${process.env.REACT_APP_API_BASE_URL}/team/${teamId}/getBoardByDate/${activeDate.toISOString().split('T')[0]}`, {
           headers: {
             'X-Authorization': token,
           }
         })
             .then(response => {
+              console.log("called");
+              console.log(response.data);
               setIsEditable(response.data.isEditable);
+              processData(response.data.tasks);
             })
             .catch(error => {
               console.error('Error fetching scrumboard data:', error);
@@ -104,6 +105,46 @@ const Scrumboard = () => {
       }
     }
   }, [token, userId, navigate, params.id, activeDate]);
+
+  const processData = (fetchedTasks) => {
+    if (!fetchedTasks || fetchedTasks.length === 0) {
+      setTasks({});
+      setData(initialData);
+      return;
+    }
+
+    const taskMap = {};
+    const columnMap = {
+      'todo': 'column-1',
+      'Doing': 'column-2',
+      'Under Review': 'column-3',
+      'Done': 'column-4',
+    };
+    const columns = {
+      'column-1': { ...initialData.columns['column-1'], taskIds: [] },
+      'column-2': { ...initialData.columns['column-2'], taskIds: [] },
+      'column-3': { ...initialData.columns['column-3'], taskIds: [] },
+      'column-4': { ...initialData.columns['column-4'], taskIds: [] },
+    };
+
+    console.log(fetchedTasks);
+    fetchedTasks.forEach(task => {
+      const taskId = `task-${task.id}`;
+      taskMap[taskId] = {
+        id: taskId,
+        content: task.title,
+        description: task.description,
+        estimation: task.estimation_time,
+        subTasks: task.subtasks || [],
+      };
+      columns[columnMap[task.column_name]].taskIds.push(taskId);
+    });
+
+    setTasks(taskMap);
+    setData({ ...data, columns });
+  };
+
+
   const moveTask = (source, destination) => {
     const start = data.columns[source.droppableId];
     const finish = data.columns[destination.droppableId];
@@ -238,7 +279,7 @@ const Scrumboard = () => {
 
   return (
       <DndProvider backend={HTML5Backend}>
-        <Box display="flex" justifyContent="center" alignItems="center" sx={{ marginTop: "20px" }}>
+        <Box display="flex" justifyContent="center" alignItems="center" sx={{marginTop:"20px"}}>
           <Card variant="outlined">
             <CardContent>
               <Box display="flex" alignItems="center">
@@ -261,17 +302,15 @@ const Scrumboard = () => {
                 </IconButton>
               </Box>
               <Box mt={2}>
-                  <Button
-                      variant="contained"
-                      color="primary"
-                      startIcon={<AddIcon />}
-                      onClick={() => setIsDialogOpen(true)}
-                      fullWidth
-                      disabled={!isEditable} // Disable button if isEditable is false
-                  >
-                      Add Task
-                  </Button>
-
+                <Button
+                    variant="contained"
+                    color="primary"
+                    startIcon={<AddIcon />}
+                    onClick={() => setIsDialogOpen(true)}
+                    fullWidth
+                >
+                  Add Task
+                </Button>
               </Box>
             </CardContent>
           </Card>
