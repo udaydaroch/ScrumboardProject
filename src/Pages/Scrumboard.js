@@ -167,6 +167,9 @@ const Scrumboard = () => {
     if (!start || !finish) {
       return;
     }
+    if(start === finish) {
+      return;
+    }
 
     const newStartTaskIds = Array.from(start.taskIds);
     newStartTaskIds.splice(source.index, 1);
