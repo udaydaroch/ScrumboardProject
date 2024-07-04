@@ -103,7 +103,6 @@ const SetupBoard = () => {
         const { date, team, tasks, allowCreateTasks } = formData;
 
         if (!tasks || tasks.length === 0) {
-            console.log(formData)
             handleSnackbar('Please add at least one task before submitting.');
             return;
         }
@@ -127,16 +126,13 @@ const SetupBoard = () => {
                 })),
             }
         };
-        if (scrumboardData){
-            console.log(scrumboardData)
-        }
+
         axios.post(`https://scrumboard-project-back-end.vercel.app/setUpBoard`, scrumboardData, {
             headers: {
                 'Content-Type': 'application/json',
             },
         })
             .then(response => {
-                console.log('Success:', response.data);
                 navigate('/scrumboard/' + response.data);
             })
             .catch(error => {

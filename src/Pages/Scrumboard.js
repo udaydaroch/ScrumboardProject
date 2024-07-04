@@ -94,8 +94,6 @@ const Scrumboard = () => {
           }
         })
             .then(response => {
-              console.log("called");
-              console.log(response.data);
               setIsEditable(response.data.isEditable);
               processData(response.data.tasks);
             })
@@ -109,8 +107,6 @@ const Scrumboard = () => {
           }
         })
             .then(response => {
-              console.log("called");
-              console.log(response.data);
               setIsEditable(response.data.isEditable);
               processData(response.data.tasks);
             })
@@ -142,7 +138,6 @@ const Scrumboard = () => {
       'column-4': { ...initialData.columns['column-4'], taskIds: [] },
     };
 
-    console.log(fetchedTasks);
     fetchedTasks.forEach(task => {
       const taskId = task.id;
       taskMap[taskId] = {

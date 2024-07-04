@@ -26,7 +26,6 @@ const Step1 = ({ data = {}, onDataChange }) => {
     useEffect(() => {
         const fetchTeams = async () => {
             try {
-                console.log(token);
                 const response = await axios.get(`https://scrumboard-project-back-end.vercel.app/teams`, {
                     headers: {
                         'X-Authorization': token

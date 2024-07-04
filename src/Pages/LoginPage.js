@@ -25,9 +25,7 @@ const LoginPage = ({ onLogin }) => {
         try {
 
             const response = await axios.post(`https://scrumboard-project-back-end.vercel.app/login`, {email, password});
-            console.log(response.data)
             const {token, userId, isAdmin, teamId} = response.data;
-            console.log(token, userId, isAdmin);
             setSession(token, userId, isAdmin, teamId);
             onLogin(isAdmin);
             navigate('/scrumboard');
