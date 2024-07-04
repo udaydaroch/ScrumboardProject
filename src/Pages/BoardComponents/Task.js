@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { useDrag, useDrop } from 'react-dnd';
-import { Paper, Box, Typography, IconButton, Tooltip } from '@mui/material';
+import { Paper, Box, Typography, IconButton, Tooltip, CircularProgress } from '@mui/material';
 import InfoIcon from '@mui/icons-material/Info';
 import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
+import useSessionStore from "../../zustandStorage/UserSessionInfo";
 
 const Task = ({ task, index, columnId, deleteTask }) => {
     const [{ isDragging }, drag] = useDrag({
@@ -24,6 +27,28 @@ const Task = ({ task, index, columnId, deleteTask }) => {
 
     const subTaskCount = task.subTasks.length;
     const estimation = task.estimation || 'N/A'; // Default to 'N/A' if no estimation provided
+    const { userId, token, isAdmin, teamId } = useSessionStore();
+    const [teamMembers, setTeamMembers] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchTeamMembers = async () => {
+            try {
+                const response = await axios.get(`https://scrumboard-project-back-end.vercel.app/getTeamByTeamId/${teamId}`, {
+                    headers: {
+                        'X-Authorization': token
+                    }
+                });
+                setTeamMembers(response.data);
+            } catch (error) {
+                console.error('Error fetching team members:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchTeamMembers();
+    }, [teamId, token]);
 
     return (
         <Paper
@@ -66,6 +91,42 @@ const Task = ({ task, index, columnId, deleteTask }) => {
                 <Typography variant="body2" color="textSecondary">
                     Sub-Tasks: {subTaskCount === 0 ? '0' : subTaskCount}
                 </Typography>
+            </Box>
+            <Box mt={2} display="flex" justifyContent="space-between" alignItems="center">
+                <Box display="flex" flexDirection="column" alignItems="center">
+                    <IconButton
+                        size="small"
+                        style={{ backgroundColor: '#e0e0e0', color: '#fff' }}
+                    >
+                        <AddIcon />
+                    </IconButton>
+                    <Typography variant="caption">Assigned to</Typography>
+                </Box>
+                <Box display="flex" flexDirection="column" alignItems="center">
+                    <IconButton
+                        size="small"
+                        style={{ backgroundColor: '#e0e0e0', color: '#fff' }}
+                    >
+                        <AddIcon />
+                    </IconButton>
+                    <Typography variant="caption">Reviewing</Typography>
+                </Box>
+            </Box>
+            <Box mt={2}>
+                <Typography variant="body2" color="textSecondary">
+                    Team Members:
+                </Typography>
+                {loading ? (
+                    <CircularProgress size={24} />
+                ) : (
+                    <Box mt={1}>
+                        {teamMembers.map((member) => (
+                            <Typography key={member.id} variant="body2">
+                                {member.username}
+                            </Typography>
+                        ))}
+                    </Box>
+                )}
             </Box>
         </Paper>
     );
