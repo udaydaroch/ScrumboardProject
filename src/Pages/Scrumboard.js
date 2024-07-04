@@ -144,7 +144,7 @@ const Scrumboard = () => {
 
     console.log(fetchedTasks);
     fetchedTasks.forEach(task => {
-      const taskId = `task-${task.id}`;
+      const taskId = task.id;
       taskMap[taskId] = {
         id: taskId,
         content: task.title,

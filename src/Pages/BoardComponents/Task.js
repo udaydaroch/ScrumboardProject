@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useDrag, useDrop } from 'react-dnd';
-import { Paper, Box, Typography, IconButton, Tooltip, CircularProgress } from '@mui/material';
+import { Paper, Box, Typography, IconButton, Tooltip, CircularProgress, Menu, MenuItem, Avatar } from '@mui/material';
 import InfoIcon from '@mui/icons-material/Info';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
+import CloseIcon from '@mui/icons-material/Close';
 import useSessionStore from "../../zustandStorage/UserSessionInfo";
 
 const Task = ({ task, index, columnId, deleteTask }) => {
@@ -30,6 +31,11 @@ const Task = ({ task, index, columnId, deleteTask }) => {
     const { userId, token, isAdmin, teamId } = useSessionStore();
     const [teamMembers, setTeamMembers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [assignedUser, setAssignedUser] = useState(null);
+    const [assignedToAnchorEl, setAssignedToAnchorEl] = useState(null);
+    const [reviewingAnchorEl, setReviewingAnchorEl] = useState(null);
+    const openAssignedTo = Boolean(assignedToAnchorEl);
+    const openReviewing = Boolean(reviewingAnchorEl);
 
     useEffect(() => {
         const fetchTeamMembers = async () => {
@@ -47,8 +53,62 @@ const Task = ({ task, index, columnId, deleteTask }) => {
             }
         };
 
+        const fetchAssignedUser = async () => {
+            try {
+                const response = await axios.get(`https://scrumboard-project-back-end.vercel.app/getTaskUser/${task.id}`, {
+                    headers: {
+                        'X-Authorization': token
+                    }
+                });
+                setAssignedUser(response.data.user);
+            } catch (error) {
+                console.error('Error fetching assigned user:', error);
+            }
+        };
+
         fetchTeamMembers();
-    }, [teamId, token]);
+        fetchAssignedUser();
+    }, [task.id, teamId, token]);
+
+    const handleAssignedToClick = (event) => {
+        setAssignedToAnchorEl(event.currentTarget);
+    };
+
+    const handleReviewingClick = (event) => {
+        setReviewingAnchorEl(event.currentTarget);
+    };
+
+    const handleClose = () => {
+        setAssignedToAnchorEl(null);
+        setReviewingAnchorEl(null);
+    };
+
+    const handleAssignUser = async (user) => {
+        try {
+            await axios.post(`https://scrumboard-project-back-end.vercel.app/setTaskUser/task/${task.id}/user/${user.id}`, {}, {
+                headers: {
+                    'X-Authorization': token
+                }
+            });
+            setAssignedUser(user);
+            handleClose();
+        } catch (error) {
+            console.error('Error assigning user:', error);
+        }
+    };
+
+    const handleRemoveUser = async () => {
+        try {
+            await axios.post(`https://scrumboard-project-back-end.vercel.app/removeTaskUser/${task.id}`, {}, {
+                headers: {
+                    'X-Authorization': token
+                }
+            });
+            setAssignedUser(null);
+        } catch (error) {
+            console.error('Error removing user:', error);
+        }
+    };
 
     return (
         <Paper
@@ -94,39 +154,79 @@ const Task = ({ task, index, columnId, deleteTask }) => {
             </Box>
             <Box mt={2} display="flex" justifyContent="space-between" alignItems="center">
                 <Box display="flex" flexDirection="column" alignItems="center">
-                    <IconButton
-                        size="small"
-                        style={{ backgroundColor: '#e0e0e0', color: '#fff' }}
-                    >
-                        <AddIcon />
-                    </IconButton>
+                    {assignedUser ? (
+                        <Box position="relative" display="inline-flex">
+                            <Avatar src={assignedUser.avatar} alt={assignedUser.username} />
+                            <IconButton
+                                size="small"
+                                style={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    right: 0,
+                                    backgroundColor: '#f00',
+                                    color: '#fff',
+                                }}
+                                onClick={handleRemoveUser}
+                            >
+                                <CloseIcon style={{ fontSize: 'small' }} />
+                            </IconButton>
+                        </Box>
+                    ) : (
+                        <IconButton
+                            size="small"
+                            style={{ backgroundColor: '#e0e0e0', color: '#fff' }}
+                            onClick={handleAssignedToClick}
+                            disabled={assignedUser !== null}
+                        >
+                            <AddIcon />
+                        </IconButton>
+                    )}
                     <Typography variant="caption">Assigned to</Typography>
+                    <Menu
+                        anchorEl={assignedToAnchorEl}
+                        open={openAssignedTo}
+                        onClose={handleClose}
+                    >
+                        {loading ? (
+                            <MenuItem disabled>
+                                <CircularProgress size={24} />
+                            </MenuItem>
+                        ) : (
+                            teamMembers.map((member) => (
+                                <MenuItem key={member.id} onClick={() => handleAssignUser(member)}>
+                                    {member.username}
+                                </MenuItem>
+                            ))
+                        )}
+                    </Menu>
                 </Box>
                 <Box display="flex" flexDirection="column" alignItems="center">
                     <IconButton
                         size="small"
                         style={{ backgroundColor: '#e0e0e0', color: '#fff' }}
+                        onClick={handleReviewingClick}
                     >
                         <AddIcon />
                     </IconButton>
                     <Typography variant="caption">Reviewing</Typography>
+                    <Menu
+                        anchorEl={reviewingAnchorEl}
+                        open={openReviewing}
+                        onClose={handleClose}
+                    >
+                        {loading ? (
+                            <MenuItem disabled>
+                                <CircularProgress size={24} />
+                            </MenuItem>
+                        ) : (
+                            teamMembers.map((member) => (
+                                <MenuItem key={member.id} onClick={handleClose}>
+                                    {member.username}
+                                </MenuItem>
+                            ))
+                        )}
+                    </Menu>
                 </Box>
-            </Box>
-            <Box mt={2}>
-                <Typography variant="body2" color="textSecondary">
-                    Team Members:
-                </Typography>
-                {loading ? (
-                    <CircularProgress size={24} />
-                ) : (
-                    <Box mt={1}>
-                        {teamMembers.map((member) => (
-                            <Typography key={member.id} variant="body2">
-                                {member.username}
-                            </Typography>
-                        ))}
-                    </Box>
-                )}
             </Box>
         </Paper>
     );
