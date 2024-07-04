@@ -32,6 +32,7 @@ const Task = ({ task, index, columnId, deleteTask }) => {
     const [teamMembers, setTeamMembers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [assignedUser, setAssignedUser] = useState(null);
+    const [assignedUserId, setAssignedUserId] = useState(null); // State for the assigned user ID
     const [assignedToAnchorEl, setAssignedToAnchorEl] = useState(null);
     const [reviewingAnchorEl, setReviewingAnchorEl] = useState(null);
     const openAssignedTo = Boolean(assignedToAnchorEl);
@@ -60,7 +61,11 @@ const Task = ({ task, index, columnId, deleteTask }) => {
                         'X-Authorization': token
                     }
                 });
-                setAssignedUser(response.data.user);
+                if (response.data && response.data.length > 0) {
+                    setAssignedUser(response.data);
+                } else {
+                    setAssignedUser(null);
+                }
             } catch (error) {
                 console.error('Error fetching assigned user:', error);
             }
@@ -85,12 +90,18 @@ const Task = ({ task, index, columnId, deleteTask }) => {
 
     const handleAssignUser = async (user) => {
         try {
-            await axios.post(`https://scrumboard-project-back-end.vercel.app/setTaskUser/task/${task.id}/user/${user.id}`, {}, {
+            console.log(user.id, "assigned user")
+            console.log(userId, "logged in user")
+            console.log(task.id, "task id")
+            console.log(token);
+            const assignedUserId = user.id; // The user picked from the list
+            await axios.post(`https://scrumboard-project-back-end.vercel.app/setTaskUser/task/${task.id}/user/${userId}/assigning/${assignedUserId}`, {}, {
                 headers: {
                     'X-Authorization': token
                 }
             });
             setAssignedUser(user);
+            setAssignedUserId(assignedUserId); // Store the ID of the assigned user
             handleClose();
         } catch (error) {
             console.error('Error assigning user:', error);
@@ -98,13 +109,17 @@ const Task = ({ task, index, columnId, deleteTask }) => {
     };
 
     const handleRemoveUser = async () => {
+        console.log(userId, "userId");
+        console.log(task.id, "taskId");
+        console.log(token, "token")
         try {
-            await axios.post(`https://scrumboard-project-back-end.vercel.app/removeTaskUser/${task.id}`, {}, {
+            await axios.post(`https://scrumboard-project-back-end.vercel.app/removeTaskUser/${task.id}/removedBy/${userId}`, {}, {
                 headers: {
                     'X-Authorization': token
                 }
             });
             setAssignedUser(null);
+            setAssignedUserId(null); // Clear the assigned user ID
         } catch (error) {
             console.error('Error removing user:', error);
         }
@@ -176,7 +191,6 @@ const Task = ({ task, index, columnId, deleteTask }) => {
                             size="small"
                             style={{ backgroundColor: '#e0e0e0', color: '#fff' }}
                             onClick={handleAssignedToClick}
-                            disabled={assignedUser !== null}
                         >
                             <AddIcon />
                         </IconButton>
