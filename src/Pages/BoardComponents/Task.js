@@ -75,10 +75,8 @@ const Task = ({ task, index, columnId, deleteTask }) => {
 
                 if (response.data && response.data.length > 0) {
                     setAssignedUser(response.data[0]);
-                    const user = teamMembers.find(member => member.id === response.data[0].assigned_user_id);
-                    if (user) {
-                        setAssignedUserName(user.username);
-                    }
+                    setAssignedUserName(response.data[0].username);
+
                 } else {
                     setAssignedUser(null);
                 }
@@ -127,7 +125,7 @@ const Task = ({ task, index, columnId, deleteTask }) => {
         try {
             setAssignedUser(null);
             setAssignedUserName('');
-
+            console.log("called");
             await axios.post(`https://scrumboard-project-back-end.vercel.app/removeTaskUser/${task.id}/removedBy/${userId}`, {}, {
                 headers: {
                     'X-Authorization': token
@@ -150,7 +148,7 @@ const Task = ({ task, index, columnId, deleteTask }) => {
     };
 
     const handleEditSubtask = (subtask) => {
-        if (assignedUser && assignedUser.assigned_user_id === userId) {
+        if (assignedUser && assignedUser.id === userId) {
             setEditingSubtask(subtask);
             setSubtaskTitle(subtask.title);
             setSubtaskDescription(subtask.description);
@@ -189,6 +187,7 @@ const Task = ({ task, index, columnId, deleteTask }) => {
 
     const handleDeleteSubtask = async (subtaskId) => {
         try {
+
             await axios.delete(`https://scrumboard-project-back-end.vercel.app/deleteSubtask/${subtaskId}`, {
                 headers: {
                     'X-Authorization': token
@@ -202,7 +201,7 @@ const Task = ({ task, index, columnId, deleteTask }) => {
     };
 
     const handleCompleteSubtask = async (subtask) => {
-        if (assignedUser && assignedUser.assigned_user_id === userId) {
+        if (assignedUser && assignedUser.id === userId) {
             try {
                 await axios.put(`https://scrumboard-project-back-end.vercel.app/updateSubtask/${subtask.id}`, {
                     title: subtask.title,
@@ -388,21 +387,21 @@ const Task = ({ task, index, columnId, deleteTask }) => {
                                         <Checkbox
                                             checked={subtask.completed}
                                             onChange={() => handleCompleteSubtask(subtask)}
-                                            disabled={!assignedUser || assignedUser.assigned_user_id !== userId}
+                                            disabled={!assignedUser || assignedUser.id !== userId}
                                         />
                                     </TableCell>
                                     <TableCell>
                                         <IconButton
                                             size="small"
                                             onClick={() => handleEditSubtask(subtask)}
-                                            disabled={!assignedUser || assignedUser.assigned_user_id !== userId}
+                                            disabled={!assignedUser || assignedUser.id !== userId}
                                         >
                                             <EditIcon />
                                         </IconButton>
                                         <IconButton
                                             size="small"
                                             onClick={() => handleDeleteSubtask(subtask.id)}
-                                            disabled={!assignedUser || assignedUser.assigned_user_id !== userId}
+                                            disabled={!assignedUser || assignedUser.id !== userId}
                                         >
                                             <DeleteIcon />
                                         </IconButton>
