@@ -21,10 +21,10 @@ Below is the table of default users with their respective email addresses and pa
 ### Features
 
 - **Basic features**
-- Login - uses hashed tokens to differentiate between users and maintain a state
-- Logout deletes the token
-- users can't access the login page using http end points onces they are logged in
-- users must be logged in to view all the other pages of the application such as scrumboard etc.
+  - Login - uses hashed tokens to differentiate between users and maintain a state
+  - Logout deletes the token
+  - users can't access the login page using http end points onces they are logged in
+  - users must be logged in to view all the other pages of the application such as scrumboard etc.
   
 - **Admin Capabilities**:
   - Set up boards on particular days.
