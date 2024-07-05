@@ -69,7 +69,12 @@ const Scrumboard = () => {
   const { userId, token,isAdmin,teamId} = useSessionStore();
   const navigate = useNavigate();
   const params = useParams();
-
+  const columnMapReverse = {
+    'column-1': 'todo',
+    'column-2': 'doing',
+    'column-3': 'review',
+    'column-4': 'done',
+  };
   useEffect(() => {
     if (!token || !userId) {
       navigate('/login');
@@ -127,10 +132,11 @@ const Scrumboard = () => {
     const taskMap = {};
     const columnMap = {
       'todo': 'column-1',
-      'Doing': 'column-2',
-      'Under Review': 'column-3',
-      'Done': 'column-4',
+      'doing': 'column-2',
+      'review': 'column-3',
+      'done': 'column-4',
     };
+
     const columns = {
       'column-1': { ...initialData.columns['column-1'], taskIds: [] },
       'column-2': { ...initialData.columns['column-2'], taskIds: [] },
@@ -190,6 +196,18 @@ const Scrumboard = () => {
       ...data,
       columns: newColumns,
     });
+    console.log(source);
+    axios.post(`https://scrumboard-project-back-end.vercel.app/moveTask/${source.draggableId}/from/${columnMapReverse[source.droppableId]}/to/${columnMapReverse[destination.droppableId]}`, {}, {
+      headers: {
+        'X-Authorization': token,
+      }
+    })
+        .then(response => {
+          console.log('Task moved successfully:', response.data);
+        })
+        .catch(error => {
+          console.error('Error moving task:', error);
+        });
   };
 
   const handleAddTask = () => {
