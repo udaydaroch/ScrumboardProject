@@ -7,6 +7,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import useSessionStore from "../../zustandStorage/UserSessionInfo";
+import { useTeam } from './TeamContext';
 
 const Task = ({ task, index, columnId, deleteTask }) => {
     const [{ isDragging }, drag] = useDrag({
@@ -27,10 +28,9 @@ const Task = ({ task, index, columnId, deleteTask }) => {
     });
 
     const subTaskCount = task.subTasks.length;
-    const estimation = task.estimation || 'N/A'; // Default to 'N/A' if no estimation provided
-    const { userId, token, isAdmin, teamId } = useSessionStore();
-    const [teamMembers, setTeamMembers] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const estimation = task.estimation || 'N/A';
+    const { userId, token } = useSessionStore();
+    const { teamMembers, loading } = useTeam();
     const [assignedUser, setAssignedUser] = useState(null);
     const [assignedToAnchorEl, setAssignedToAnchorEl] = useState(null);
     const [reviewingAnchorEl, setReviewingAnchorEl] = useState(null);
@@ -39,23 +39,7 @@ const Task = ({ task, index, columnId, deleteTask }) => {
     const [assignedUserName, setAssignedUserName] = useState('');
 
     useEffect(() => {
-        const fetchTeamMembers = async () => {
-            try {
-                const response = await axios.get(`https://scrumboard-project-back-end.vercel.app/getTeamByTeamId/${teamId}`, {
-                    headers: {
-                        'X-Authorization': token
-                    }
-                });
-                setTeamMembers(response.data);
-                return response.data;
-            } catch (error) {
-                console.error('Error fetching team members:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        const fetchAssignedUser = async (team) => {
+        const fetchAssignedUser = async () => {
             try {
                 const response = await axios.get(`https://scrumboard-project-back-end.vercel.app/getTaskUser/${task.id}`, {
                     headers: {
@@ -65,10 +49,9 @@ const Task = ({ task, index, columnId, deleteTask }) => {
 
                 if (response.data && response.data.length > 0) {
                     setAssignedUser(response.data[0]);
-                    for(let i = 0; i < team.length; i++){
-                        if (team[i].id === response.data[0].assigned_user_id){
-                            setAssignedUserName(team[i].username);
-                        }
+                    const user = teamMembers.find(member => member.id === response.data[0].assigned_user_id);
+                    if (user) {
+                        setAssignedUserName(user.username);
                     }
                 } else {
                     setAssignedUser(null);
@@ -78,13 +61,9 @@ const Task = ({ task, index, columnId, deleteTask }) => {
             }
         };
 
-        const fetchData = async () => {
-            const team = await fetchTeamMembers();
-            await fetchAssignedUser(team);
-        };
+        fetchAssignedUser();
+    }, [task.id, teamMembers, token]);
 
-        fetchData();
-    }, [task.id, teamId, token]);
     const handleAssignedToClick = (event) => {
         setAssignedToAnchorEl(event.currentTarget);
     };
@@ -101,33 +80,33 @@ const Task = ({ task, index, columnId, deleteTask }) => {
     const handleAssignUser = async (user) => {
         try {
             const assignedUserId = user.id; // The user picked from the list
+            setAssignedUser(user);
+            setAssignedUserName(user.username);
+
             await axios.post(`https://scrumboard-project-back-end.vercel.app/setTaskUser/task/${task.id}/user/${userId}/assigning/${assignedUserId}`, {}, {
                 headers: {
                     'X-Authorization': token
                 }
             });
 
-            setAssignedUser(user);
-            for(let i = 0; i < teamMembers.length; i++){
-                if (teamMembers[i].id === assignedUserId){
-                    setAssignedUserName(teamMembers[i].username);
-                }
-            }
             handleClose();
         } catch (error) {
             console.error('Error assigning user:', error);
+            setAssignedUser(null);
+            setAssignedUserName('');
         }
     };
 
     const handleRemoveUser = async () => {
         try {
+            setAssignedUser(null);
+            setAssignedUserName('');
+
             await axios.post(`https://scrumboard-project-back-end.vercel.app/removeTaskUser/${task.id}/removedBy/${userId}`, {}, {
                 headers: {
                     'X-Authorization': token
                 }
             });
-            setAssignedUser(null);
-            setAssignedUserName(null)
         } catch (error) {
             console.error('Error removing user:', error);
         }
@@ -144,10 +123,10 @@ const Task = ({ task, index, columnId, deleteTask }) => {
                 opacity: isDragging ? 0.7 : 1,
                 boxShadow: isDragging
                     ? '0px 3px 6px rgba(0,0,0,0.3)'
-                    : '0px 2px 3px rgba(0,0,0,0.1), 0px 0px 0px 2px rgba(0,0,0,0.05)', // Subtle shadow around the border
+                    : '0px 2px 3px rgba(0,0,0,0.1), 0px 0px 0px 2px rgba(0,0,0,0.05)',
                 transition: 'background-color 0.3s ease, opacity 0.3s ease, box-shadow 0.3s ease',
-                borderLeft: `5px solid ${task.color}`, // Adjust border color based on task color
-                borderRadius: 8, // Rounded corners
+                borderLeft: `5px solid ${task.color}`,
+                borderRadius: 8,
             }}
         >
             <Box display="flex" justifyContent="space-between" alignItems="center">
@@ -158,7 +137,7 @@ const Task = ({ task, index, columnId, deleteTask }) => {
                             <InfoIcon />
                         </IconButton>
                     </Tooltip>
-                    {columnId === 'column-4' && ( // Only show delete button if task is in the 'Done' column
+                    {columnId === 'column-4' && (
                         <Tooltip title="Delete Task">
                             <IconButton size="small" onClick={() => deleteTask(task.id)}>
                                 <DeleteIcon />
