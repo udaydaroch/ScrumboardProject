@@ -1,11 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useDrag, useDrop } from 'react-dnd';
-import { Paper, Box, Typography, IconButton, Tooltip, CircularProgress, Menu, MenuItem } from '@mui/material';
+import {
+    Paper,
+    Box,
+    Typography,
+    IconButton,
+    Tooltip,
+    CircularProgress,
+    Menu,
+    MenuItem,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    Button,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableRow,
+    TextField,
+    Checkbox
+} from '@mui/material';
 import InfoIcon from '@mui/icons-material/Info';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
+import EditIcon from '@mui/icons-material/Edit';
 import useSessionStore from "../../zustandStorage/UserSessionInfo";
 import { useTeam } from './TeamContext';
 
@@ -37,6 +59,10 @@ const Task = ({ task, index, columnId, deleteTask }) => {
     const openAssignedTo = Boolean(assignedToAnchorEl);
     const openReviewing = Boolean(reviewingAnchorEl);
     const [assignedUserName, setAssignedUserName] = useState('');
+    const [infoOpen, setInfoOpen] = useState(false);
+    const [editingSubtask, setEditingSubtask] = useState(null);
+    const [subtaskTitle, setSubtaskTitle] = useState('');
+    const [subtaskDescription, setSubtaskDescription] = useState('');
 
     useEffect(() => {
         const fetchAssignedUser = async () => {
@@ -112,6 +138,89 @@ const Task = ({ task, index, columnId, deleteTask }) => {
         }
     };
 
+    const handleInfoOpen = () => {
+        setInfoOpen(true);
+    };
+
+    const handleInfoClose = () => {
+        setInfoOpen(false);
+        setEditingSubtask(null);
+        setSubtaskTitle('');
+        setSubtaskDescription('');
+    };
+
+    const handleEditSubtask = (subtask) => {
+        if (assignedUser && assignedUser.assigned_user_id === userId) {
+            setEditingSubtask(subtask);
+            setSubtaskTitle(subtask.title);
+            setSubtaskDescription(subtask.description);
+        }
+    };
+
+    const handleSubtaskChange = (e) => {
+        const { name, value } = e.target;
+        if (name === 'title') {
+            setSubtaskTitle(value);
+        } else if (name === 'description') {
+            setSubtaskDescription(value);
+        }
+    };
+
+    const handleSaveSubtask = async () => {
+        try {
+            await axios.put(`https://scrumboard-project-back-end.vercel.app/updateSubtask/${editingSubtask.id}`, {
+                title: subtaskTitle,
+                description: subtaskDescription,
+                completed: editingSubtask.completed
+            }, {
+                headers: {
+                    'X-Authorization': token
+                }
+            });
+
+            setEditingSubtask(null);
+            setSubtaskTitle('');
+            setSubtaskDescription('');
+            handleInfoClose();
+        } catch (error) {
+            console.error('Error saving subtask:', error);
+        }
+    };
+
+    const handleDeleteSubtask = async (subtaskId) => {
+        try {
+            await axios.delete(`https://scrumboard-project-back-end.vercel.app/deleteSubtask/${subtaskId}`, {
+                headers: {
+                    'X-Authorization': token
+                }
+            });
+
+            handleInfoClose();
+        } catch (error) {
+            console.error('Error deleting subtask:', error);
+        }
+    };
+
+    const handleCompleteSubtask = async (subtask) => {
+        if (assignedUser && assignedUser.assigned_user_id === userId) {
+            try {
+                await axios.put(`https://scrumboard-project-back-end.vercel.app/updateSubtask/${subtask.id}`, {
+                    title: subtask.title,
+                    description: subtask.description,
+                    completed: !subtask.completed
+                }, {
+                    headers: {
+                        'X-Authorization': token
+                    }
+                });
+
+                handleInfoClose();
+            } catch (error) {
+                console.error('Error completing subtask:', error);
+            }
+        }
+    };
+
     return (
         <Paper
             ref={(node) => drag(drop(node))}
@@ -133,7 +242,7 @@ const Task = ({ task, index, columnId, deleteTask }) => {
                 <Typography variant="subtitle1">{task.content}</Typography>
                 <Box display="flex" alignItems="center">
                     <Tooltip title="Task Details">
-                        <IconButton size="small">
+                        <IconButton size="small" onClick={handleInfoOpen}>
                             <InfoIcon />
                         </IconButton>
                     </Tooltip>
@@ -237,6 +346,83 @@ const Task = ({ task, index, columnId, deleteTask }) => {
                     </Menu>
                 </Box>
             </Box>
+
+            <Dialog open={infoOpen} onClose={handleInfoClose} fullWidth maxWidth="sm">
+                <DialogTitle>Subtasks for "{task.content}"</DialogTitle>
+                <DialogContent>
+                    <Table>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>Title</TableCell>
+                                <TableCell>Description</TableCell>
+                                <TableCell>Completed</TableCell>
+                                <TableCell>Actions</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {task.subTasks.map((subtask) => (
+                                <TableRow key={subtask.id}>
+                                    <TableCell>
+                                        {editingSubtask && editingSubtask.id === subtask.id ? (
+                                            <TextField
+                                                name="title"
+                                                value={subtaskTitle}
+                                                onChange={handleSubtaskChange}
+                                            />
+                                        ) : (
+                                            subtask.title
+                                        )}
+                                    </TableCell>
+                                    <TableCell>
+                                        {editingSubtask && editingSubtask.id === subtask.id ? (
+                                            <TextField
+                                                name="description"
+                                                value={subtaskDescription}
+                                                onChange={handleSubtaskChange}
+                                            />
+                                        ) : (
+                                            subtask.description
+                                        )}
+                                    </TableCell>
+                                    <TableCell>
+                                        <Checkbox
+                                            checked={subtask.completed}
+                                            onChange={() => handleCompleteSubtask(subtask)}
+                                            disabled={!assignedUser || assignedUser.assigned_user_id !== userId}
+                                        />
+                                    </TableCell>
+                                    <TableCell>
+                                        <IconButton
+                                            size="small"
+                                            onClick={() => handleEditSubtask(subtask)}
+                                            disabled={!assignedUser || assignedUser.assigned_user_id !== userId}
+                                        >
+                                            <EditIcon />
+                                        </IconButton>
+                                        <IconButton
+                                            size="small"
+                                            onClick={() => handleDeleteSubtask(subtask.id)}
+                                            disabled={!assignedUser || assignedUser.assigned_user_id !== userId}
+                                        >
+                                            <DeleteIcon />
+                                        </IconButton>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </DialogContent>
+                <DialogActions>
+                    {editingSubtask && (
+                        <Button onClick={handleSaveSubtask} color="primary">
+                            Save
+                        </Button>
+                    )}
+                    <Button onClick={handleInfoClose} color="primary">
+                        Close
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Paper>
     );
 };
