@@ -20,18 +20,25 @@ Below is the table of default users with their respective email addresses and pa
 
 ### Features
 
+- **Basic features**
+- Login - uses hashed tokens to differentiate between users and maintain a state
+- Logout deletes the token
+- users can't access the login page using http end points onces they are logged in
+- users must be logged in to view all the other pages of the application such as scrumboard etc.
+  
 - **Admin Capabilities**:
   - Set up boards on particular days.
   - Add new scrumboards to different teams.
-  - Confirm tasks when they are marked as done.
+  - Confirm tasks when they are marked as done (work in progress)
 
 - **User Capabilities**:
   - Move tasks between columns, with progress saved automatically.
   - Assign themselves or other team members to tasks.
   - Any member of the same team can assign or unassign anyone from tasks.
+  - Allow other team members to assign themselves to tasks as reviews once the task in under review (work in progress)
 
 - **Planned Features**:
-  - Allow only assigned users to mark subtasks as completed, one at a time.
+  - Allow only assigned users to mark subtasks as completed, one at a time (work in progress) 
   - Allow only the admin to confirm tasks when they are put in the "Done" column.
 
 ## Technologies Used
