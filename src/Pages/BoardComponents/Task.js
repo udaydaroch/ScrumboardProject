@@ -8,8 +8,6 @@ import {
     IconButton,
     Tooltip,
     CircularProgress,
-    Menu,
-    MenuItem,
     Dialog,
     DialogTitle,
     DialogContent,
@@ -21,7 +19,10 @@ import {
     TableHead,
     TableRow,
     TextField,
-    Checkbox
+    Checkbox,
+    List,
+    ListItem,
+    ListItemText
 } from '@mui/material';
 import InfoIcon from '@mui/icons-material/Info';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -54,12 +55,9 @@ const Task = ({ task, index, columnId, deleteTask }) => {
     const { userId, token } = useSessionStore();
     const { teamMembers, loading } = useTeam();
     const [assignedUser, setAssignedUser] = useState(null);
-    const [assignedToAnchorEl, setAssignedToAnchorEl] = useState(null);
-    const [reviewingAnchorEl, setReviewingAnchorEl] = useState(null);
-    const openAssignedTo = Boolean(assignedToAnchorEl);
-    const openReviewing = Boolean(reviewingAnchorEl);
     const [assignedUserName, setAssignedUserName] = useState('');
     const [infoOpen, setInfoOpen] = useState(false);
+    const [assignDialogOpen, setAssignDialogOpen] = useState(false);
     const [editingSubtask, setEditingSubtask] = useState(null);
     const [subtaskTitle, setSubtaskTitle] = useState('');
     const [subtaskDescription, setSubtaskDescription] = useState('');
@@ -88,17 +86,12 @@ const Task = ({ task, index, columnId, deleteTask }) => {
         fetchAssignedUser();
     }, [task.id, teamMembers, token]);
 
-    const handleAssignedToClick = (event) => {
-        setAssignedToAnchorEl(event.currentTarget);
+    const handleAssignDialogOpen = () => {
+        setAssignDialogOpen(true);
     };
 
-    const handleReviewingClick = (event) => {
-        setReviewingAnchorEl(event.currentTarget);
-    };
-
-    const handleClose = () => {
-        setAssignedToAnchorEl(null);
-        setReviewingAnchorEl(null);
+    const handleAssignDialogClose = () => {
+        setAssignDialogOpen(false);
     };
 
     const handleAssignUser = async (user) => {
@@ -113,7 +106,7 @@ const Task = ({ task, index, columnId, deleteTask }) => {
                 }
             });
 
-            handleClose();
+            handleAssignDialogClose();
         } catch (error) {
             console.error('Error assigning user:', error);
             setAssignedUser(null);
@@ -279,76 +272,37 @@ const Task = ({ task, index, columnId, deleteTask }) => {
                                 size="small"
                                 style={{
                                     position: 'absolute',
-                                    top: -8,
-                                    right: -8,
-                                    backgroundColor: '#f00',
-                                    color: '#fff',
+                                    top: 0,
+                                    right: 0,
+                                    transform: 'translate(50%, -50%)',
                                 }}
                                 onClick={handleRemoveUser}
                             >
-                                <CloseIcon style={{ fontSize: 'small' }} />
+                                <CloseIcon />
                             </IconButton>
                         </Box>
                     ) : (
-                        <IconButton
+                        <Button
                             size="small"
-                            style={{ backgroundColor: '#e0e0e0', color: '#fff' }}
-                            onClick={handleAssignedToClick}
+                            variant="outlined"
+                            color="primary"
+                            startIcon={<AddIcon />}
+                            onClick={handleAssignDialogOpen}
                         >
-                            <AddIcon />
-                        </IconButton>
+                            Assign
+                        </Button>
                     )}
-                    <Typography variant="caption">Assigned to</Typography>
-                    <Menu
-                        anchorEl={assignedToAnchorEl}
-                        open={openAssignedTo}
-                        onClose={handleClose}
-                    >
-                        {loading ? (
-                            <MenuItem disabled>
-                                <CircularProgress size={24} />
-                            </MenuItem>
-                        ) : (
-                            teamMembers.map((member) => (
-                                <MenuItem key={member.id} onClick={() => handleAssignUser(member)}>
-                                    {member.username}
-                                </MenuItem>
-                            ))
-                        )}
-                    </Menu>
-                </Box>
-                <Box display="flex" flexDirection="column" alignItems="center">
-                    <IconButton
-                        size="small"
-                        style={{ backgroundColor: '#e0e0e0', color: '#fff' }}
-                        onClick={handleReviewingClick}
-                    >
-                        <AddIcon />
-                    </IconButton>
-                    <Typography variant="caption">Reviewing</Typography>
-                    <Menu
-                        anchorEl={reviewingAnchorEl}
-                        open={openReviewing}
-                        onClose={handleClose}
-                    >
-                        {loading ? (
-                            <MenuItem disabled>
-                                <CircularProgress size={24} />
-                            </MenuItem>
-                        ) : (
-                            teamMembers.map((member) => (
-                                <MenuItem key={member.id} onClick={handleClose}>
-                                    {member.username}
-                                </MenuItem>
-                            ))
-                        )}
-                    </Menu>
                 </Box>
             </Box>
 
-            <Dialog open={infoOpen} onClose={handleInfoClose} fullWidth maxWidth="sm">
-                <DialogTitle>Subtasks for "{task.content}"</DialogTitle>
+            <Dialog open={infoOpen} onClose={handleInfoClose} maxWidth="md" fullWidth>
+                <DialogTitle>Task Details</DialogTitle>
                 <DialogContent>
+                    <Typography variant="h6">Task Description</Typography>
+                    <Typography variant="body1" gutterBottom>
+                        {task.description}
+                    </Typography>
+                    <Typography variant="h6">Sub-Tasks</Typography>
                     <Table>
                         <TableHead>
                             <TableRow>
@@ -367,6 +321,7 @@ const Task = ({ task, index, columnId, deleteTask }) => {
                                                 name="title"
                                                 value={subtaskTitle}
                                                 onChange={handleSubtaskChange}
+                                                fullWidth
                                             />
                                         ) : (
                                             subtask.title
@@ -378,6 +333,7 @@ const Task = ({ task, index, columnId, deleteTask }) => {
                                                 name="description"
                                                 value={subtaskDescription}
                                                 onChange={handleSubtaskChange}
+                                                fullWidth
                                             />
                                         ) : (
                                             subtask.description
@@ -387,24 +343,20 @@ const Task = ({ task, index, columnId, deleteTask }) => {
                                         <Checkbox
                                             checked={subtask.completed}
                                             onChange={() => handleCompleteSubtask(subtask)}
-                                            disabled={!assignedUser || assignedUser.id !== userId}
+                                            disabled={!(assignedUser && assignedUser.id === userId)}
                                         />
                                     </TableCell>
                                     <TableCell>
-                                        <IconButton
-                                            size="small"
-                                            onClick={() => handleEditSubtask(subtask)}
-                                            disabled={!assignedUser || assignedUser.id !== userId}
-                                        >
-                                            <EditIcon />
-                                        </IconButton>
-                                        <IconButton
-                                            size="small"
-                                            onClick={() => handleDeleteSubtask(subtask.id)}
-                                            disabled={!assignedUser || assignedUser.id !== userId}
-                                        >
-                                            <DeleteIcon />
-                                        </IconButton>
+                                        {assignedUser && assignedUser.id === userId && (
+                                            <>
+                                                <IconButton size="small" onClick={() => handleEditSubtask(subtask)}>
+                                                    <EditIcon />
+                                                </IconButton>
+                                                <IconButton size="small" onClick={() => handleDeleteSubtask(subtask.id)}>
+                                                    <DeleteIcon />
+                                                </IconButton>
+                                            </>
+                                        )}
                                     </TableCell>
                                 </TableRow>
                             ))}
@@ -412,12 +364,34 @@ const Task = ({ task, index, columnId, deleteTask }) => {
                     </Table>
                 </DialogContent>
                 <DialogActions>
+                    <Button onClick={handleInfoClose} color="primary">
+                        Close
+                    </Button>
                     {editingSubtask && (
-                        <Button onClick={handleSaveSubtask} color="primary">
+                        <Button onClick={handleSaveSubtask} color="primary" variant="contained">
                             Save
                         </Button>
                     )}
-                    <Button onClick={handleInfoClose} color="primary">
+                </DialogActions>
+            </Dialog>
+
+            <Dialog open={assignDialogOpen} onClose={handleAssignDialogClose}>
+                <DialogTitle>Assign User</DialogTitle>
+                <DialogContent>
+                    {loading ? (
+                        <CircularProgress />
+                    ) : (
+                        <List>
+                            {teamMembers.map((member) => (
+                                <ListItem button key={member.id} onClick={() => handleAssignUser(member)}>
+                                    <ListItemText primary={member.username} />
+                                </ListItem>
+                            ))}
+                        </List>
+                    )}
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleAssignDialogClose} color="primary">
                         Close
                     </Button>
                 </DialogActions>
