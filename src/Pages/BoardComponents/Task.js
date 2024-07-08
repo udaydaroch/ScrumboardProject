@@ -130,6 +130,7 @@ const Task = ({ task, index, columnId, deleteTask }) => {
         fetchAssignedUser();
         fetchReviewUser();
         fetchReviewingMembers();
+        console.log(reviewingMembers);
     }, [task.id, teamMembers, token]);
 
     const handleAssignDialogOpen = () => {
@@ -161,6 +162,7 @@ const Task = ({ task, index, columnId, deleteTask }) => {
                 }
             });
             fetchAssignedUser();
+            fetchReviewingMembers();
             handleAssignDialogClose();
         } catch (error) {
             console.error('Error assigning user:', error);
@@ -180,8 +182,8 @@ const Task = ({ task, index, columnId, deleteTask }) => {
                     'X-Authorization': token
                 }
             });
-            fetchReviewUser();
-            handleAssignDialogClose();
+            await fetchReviewUser();
+            handleReviewDialogClose();
         } catch (error) {
             console.error('Error assigning user:', error);
             setAssignedUser(null);
@@ -203,6 +205,7 @@ const Task = ({ task, index, columnId, deleteTask }) => {
             });
             setAssignedUser(null);
             setAssignedUserName('');
+            fetchReviewingMembers();
             await fetchAssignedUser();
         } catch (error) {
             console.error('Error removing user:', error);
@@ -389,6 +392,44 @@ const Task = ({ task, index, columnId, deleteTask }) => {
                         </Button>
                     )}
                 </Box>
+
+                <Box display="flex" flexDirection="column" alignItems="center">
+                    {reviewingUser ? (
+                        <Box
+                            display="flex"
+                            alignItems="center"
+                            position="relative"
+                            px={2}
+                            py={1}
+                            borderRadius={16}
+                            bgcolor="#e0e0e0"
+                        >
+                            <Typography variant="body2">{reviewingUserName}</Typography>
+                            <IconButton
+                                size="small"
+                                style={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    right: 0,
+                                    transform: 'translate(50%, -50%)',
+                                }}
+                                onClick={handleRemoveReviewer()}
+                            >
+                                <CloseIcon />
+                            </IconButton>
+                        </Box>
+                    ) : (
+                        <Button
+                            size="small"
+                            variant="outlined"
+                            color="primary"
+                            startIcon={<AddIcon />}
+                            onClick={handleReviewDialogOpen}
+                        >
+                            Review
+                        </Button>
+                    )}
+                </Box>
             </Box>
 
             <Dialog open={infoOpen} onClose={handleInfoClose} maxWidth="md" fullWidth>
@@ -472,7 +513,7 @@ const Task = ({ task, index, columnId, deleteTask }) => {
             </Dialog>
 
             <Dialog open={assignDialogOpen} onClose={handleAssignDialogClose}>
-                <DialogTitle>Assign User</DialogTitle>
+                <DialogTitle>assign user</DialogTitle>
                 <DialogContent>
                     {loading ? (
                         <CircularProgress />
@@ -488,6 +529,25 @@ const Task = ({ task, index, columnId, deleteTask }) => {
                 </DialogContent>
              <DialogActions>
                     <Button onClick={handleAssignDialogClose} color="primary">
+                        Close
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+
+            <Dialog open={reviewingDialogOpen} onClose={handleReviewDialogClose}>
+                <DialogTitle>assign reviewer</DialogTitle>
+                <DialogContent>
+                    <List>
+                        {reviewingMembers.map((member) => (
+                            <ListItem button key={member.id} onClick={() => handleReviewUser(member)}>
+                                <ListItemText primary={member.username} />
+                            </ListItem>
+                        ))}
+                    </List>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleReviewDialogClose} color="primary">
                         Close
                     </Button>
                 </DialogActions>
