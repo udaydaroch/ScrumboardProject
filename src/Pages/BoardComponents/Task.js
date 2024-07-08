@@ -33,9 +33,9 @@ import useSessionStore from "../../zustandStorage/UserSessionInfo";
 import { useTeam } from './TeamContext';
 
 const Task = ({ task, index, columnId, deleteTask }) => {
-    const [{ isDragging }, drag] = useDrag({
+    const [{isDragging}, drag] = useDrag({
         type: 'TASK',
-        item: { id: task.id, index, columnId, hoverIndex: index },
+        item: {id: task.id, index, columnId, hoverIndex: index},
         collect: (monitor) => ({
             isDragging: monitor.isDragging(),
         }),
@@ -52,38 +52,84 @@ const Task = ({ task, index, columnId, deleteTask }) => {
 
     const subTaskCount = task.subTasks.length;
     const estimation = task.estimation || 'N/A';
-    const { userId, token } = useSessionStore();
-    const { teamMembers, loading } = useTeam();
+    const {userId, token, teamId} = useSessionStore();
+    const {teamMembers, loading} = useTeam();
     const [assignedUser, setAssignedUser] = useState(null);
+
+    const [reviewingMembers, setReviewingMembers] = useState([]);
+
     const [assignedUserName, setAssignedUserName] = useState('');
     const [infoOpen, setInfoOpen] = useState(false);
     const [assignDialogOpen, setAssignDialogOpen] = useState(false);
+
+    const [reviewingUser, setReviewingUser] = useState(null);
+    const [reviewingUserName, setReviewingUserName] = useState('');
+    const [reviewingDialogOpen, setReviewingDialogOpen] = useState(false)
+
+
     const [editingSubtask, setEditingSubtask] = useState(null);
     const [subtaskTitle, setSubtaskTitle] = useState('');
     const [subtaskDescription, setSubtaskDescription] = useState('');
 
-    useEffect(() => {
-        const fetchAssignedUser = async () => {
-            try {
-                const response = await axios.get(`https://scrumboard-project-back-end.vercel.app/getTaskUser/${task.id}`, {
-                    headers: {
-                        'X-Authorization': token
-                    }
-                });
-
-                if (response.data && response.data.length > 0) {
-                    setAssignedUser(response.data[0]);
-                    setAssignedUserName(response.data[0].username);
-
-                } else {
-                    setAssignedUser(null);
+    const fetchAssignedUser = async () => {
+        try {
+            const response = await axios.get(`https://scrumboard-project-back-end.vercel.app/getTaskUser/${task.id}`, {
+                headers: {
+                    'X-Authorization': token
                 }
-            } catch (error) {
-                console.error('Error fetching assigned user:', error);
-            }
-        };
+            });
+            console.log(response.data);
+            if (response.data && response.data.length > 0) {
+                setAssignedUser(response.data[0]);
+                setAssignedUserName(response.data[0].username);
 
+            } else {
+                setAssignedUser(null);
+            }
+        } catch (error) {
+            console.error('Error fetching assigned user:', error);
+        }
+    };
+
+    const fetchReviewingMembers = async () => {
+        try {
+            const response = await axios.get(`https://scrumboard-project-back-end.vercel.app/getReviewerByTaskId/${task.id}/team/${teamId}`, {
+                headers: {
+                    'X-Authorization': token
+                }
+            });
+            setReviewingMembers(response.data);
+            console.log(response.data);
+        } catch (error) {
+            console.error('Error fetching team members:', error);
+        }
+    };
+
+    const fetchReviewUser = async () => {
+        try {
+            const response = await axios.get(`https://scrumboard-project-back-end.vercel.app/getTaskReviewer/${task.id}`, {
+                headers: {
+                    'X-Authorization': token
+                }
+            });
+
+            if (response.data && response.data.length > 0) {
+                setReviewingUser(response.data[0]);
+                setAssignedUserName(response.data[0].username);
+
+            } else {
+                setReviewingUser(null);
+            }
+        } catch (error) {
+            console.error('Error fetching assigned user:', error);
+        }
+    };
+
+
+    useEffect(() => {
         fetchAssignedUser();
+        fetchReviewUser();
+        fetchReviewingMembers();
     }, [task.id, teamMembers, token]);
 
     const handleAssignDialogOpen = () => {
@@ -93,6 +139,15 @@ const Task = ({ task, index, columnId, deleteTask }) => {
     const handleAssignDialogClose = () => {
         setAssignDialogOpen(false);
     };
+
+    const handleReviewDialogOpen = () => {
+        setReviewingDialogOpen(true);
+    };
+
+    const handleReviewDialogClose = () => {
+        setReviewingDialogOpen(false);
+    };
+
 
     const handleAssignUser = async (user) => {
         try {
@@ -105,7 +160,7 @@ const Task = ({ task, index, columnId, deleteTask }) => {
                     'X-Authorization': token
                 }
             });
-
+            fetchAssignedUser();
             handleAssignDialogClose();
         } catch (error) {
             console.error('Error assigning user:', error);
@@ -114,16 +169,57 @@ const Task = ({ task, index, columnId, deleteTask }) => {
         }
     };
 
-    const handleRemoveUser = async () => {
+    const handleReviewUser = async (user) => {
         try {
-            setAssignedUser(null);
-            setAssignedUserName('');
-            console.log("called");
-            await axios.post(`https://scrumboard-project-back-end.vercel.app/removeTaskUser/${task.id}/removedBy/${userId}`, {}, {
+            const ReviewUserId = user.id; // The user picked from the list
+            setReviewingUser(user);
+            setReviewingUserName(user.username);
+
+            await axios.post(`https://scrumboard-project-back-end.vercel.app/setTaskReviewer/task/${task.id}/user/${userId}/reviewing/${ReviewUserId}`, {}, {
                 headers: {
                     'X-Authorization': token
                 }
             });
+            fetchReviewUser();
+            handleAssignDialogClose();
+        } catch (error) {
+            console.error('Error assigning user:', error);
+            setAssignedUser(null);
+            setAssignedUserName('');
+        }
+    };
+
+
+    const handleRemoveUser = async () => {
+        try {
+
+            console.log("called");
+            console.log(task.id)
+            console.log(userId);
+            await axios.post(`https://scrumboard-project-back-end.vercel.app/removeTaskUser/${task.id}/removedBy/${userId}/assigned/${assignedUser.id}`, {}, {
+                headers: {
+                    'X-Authorization': token
+                }
+            });
+            setAssignedUser(null);
+            setAssignedUserName('');
+            await fetchAssignedUser();
+        } catch (error) {
+            console.error('Error removing user:', error);
+        }
+    };
+
+    const handleRemoveReviewer = async () => {
+        try {
+            setAssignedUser(null);
+            setAssignedUserName('');
+            console.log("called");
+            await axios.post(`https://scrumboard-project-back-end.vercel.app/removeTaskReviewer/${task.id}/removedBy/${userId}/reviewing/${reviewingUser.id}`, {}, {
+                headers: {
+                    'X-Authorization': token
+                }
+            });
+            fetchReviewUser();
         } catch (error) {
             console.error('Error removing user:', error);
         }
@@ -390,7 +486,7 @@ const Task = ({ task, index, columnId, deleteTask }) => {
                         </List>
                     )}
                 </DialogContent>
-                <DialogActions>
+             <DialogActions>
                     <Button onClick={handleAssignDialogClose} color="primary">
                         Close
                     </Button>
