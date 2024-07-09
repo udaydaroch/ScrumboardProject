@@ -239,74 +239,6 @@ const Task = ({ task, index, columnId, deleteTask,refreshBoard}) => {
         setSubtaskDescription('');
     };
 
-    const handleEditSubtask = (subtask) => {
-        if (assignedUser && assignedUser.id === userId) {
-            setEditingSubtask(subtask);
-            setSubtaskTitle(subtask.title);
-            setSubtaskDescription(subtask.description);
-        }
-    };
-
-    const handleSubtaskChange = (e) => {
-        const { name, value } = e.target;
-        if (name === 'title') {
-            setSubtaskTitle(value);
-        } else if (name === 'description') {
-            setSubtaskDescription(value);
-        }
-    };
-
-    const handleSaveSubtask = async () => {
-        try {
-            await axios.put(`https://scrumboard-project-back-end.vercel.app/updateSubtask/${editingSubtask.id}`, {
-                title: subtaskTitle,
-                description: subtaskDescription,
-                completed: editingSubtask.completed
-            }, {
-                headers: {
-                    'X-Authorization': token
-                }
-            });
-
-            setEditingSubtask(null);
-            setSubtaskTitle('');
-            setSubtaskDescription('');
-            handleInfoClose();
-        } catch (error) {
-            console.error('Error saving subtask:', error);
-        }
-    };
-
-    const handleDeleteSubtask = async (subtaskId) => {
-        try {
-
-            await axios.delete(`https://scrumboard-project-back-end.vercel.app/deleteSubtask/${subtaskId}`, {
-                headers: {
-                    'X-Authorization': token
-                }
-            });
-
-            handleInfoClose();
-        } catch (error) {
-            console.error('Error deleting subtask:', error);
-        }
-    };
-
-    const handleCompleteSubtask = async (subtask) => {
-        if (assignedUser && assignedUser.id === userId) {
-            try {
-                await axios.post(`https://scrumboard-project-back-end.vercel.app/completeSubTask/${subtask.id}/user/${userId}`, {}, {
-                    headers: {
-                        'X-Authorization': token
-                    }
-                });
-                refreshBoard();
-            } catch (error) {
-                console.error('Error completing subtask:', error);
-            }
-        }
-    };
-
     return (
         <Paper
             ref={(node) => drag(drop(node))}
@@ -430,17 +362,12 @@ const Task = ({ task, index, columnId, deleteTask,refreshBoard}) => {
             <Dialog open={infoOpen} onClose={handleInfoClose} maxWidth="md" fullWidth>
                 <DialogTitle>Task Details</DialogTitle>
                 <DialogContent>
-                    <Typography variant="h6">Task Description</Typography>
-                    <Typography variant="body1" gutterBottom>
-                        {task.description}
-                    </Typography>
                     <Typography variant="h6">Sub-Tasks</Typography>
                     <Table>
                         <TableHead>
                             <TableRow>
                                 <TableCell>Title</TableCell>
                                 <TableCell>Description</TableCell>
-                                <TableCell>Completed</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
