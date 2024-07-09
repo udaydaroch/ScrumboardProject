@@ -303,8 +303,8 @@ const Task = ({ task, index, columnId, deleteTask, completeTask}) => {
                                     right: 0,
                                     transform: 'translate(50%, -50%)',
                                 }}
-                                onClick={isAdmin && !task.isCompleted ? handleRemoveUser : null}
-                                disabled={!isAdmin || task.isCompleted}
+                                onClick={task.isCompleted ? null : handleRemoveUser}
+                                disabled={task.isCompleted}
                             >
                                 <CloseIcon />
                             </IconButton>
@@ -315,8 +315,8 @@ const Task = ({ task, index, columnId, deleteTask, completeTask}) => {
                             variant="outlined"
                             color="primary"
                             startIcon={<AddIcon />}
-                            onClick={isAdmin && !task.isCompleted ? handleAssignDialogOpen : null}
-                            disabled={!isAdmin || task.isCompleted}
+                            onClick={task.isCompleted ? null : handleAssignDialogOpen}
+                            disabled={task.isCompleted}
                         >
                             Assign
                         </Button>
@@ -343,8 +343,8 @@ const Task = ({ task, index, columnId, deleteTask, completeTask}) => {
                                     right: 0,
                                     transform: 'translate(50%, -50%)',
                                 }}
-                                onClick={isAdmin && !task.isCompleted ? handleRemoveReviewer : null}
-                                disabled={!isAdmin || task.isCompleted}
+                                onClick={task.isCompleted ? null : handleRemoveReviewer}
+                                disabled={task.isCompleted}
                             >
                                 <CloseIcon />
                             </IconButton>
@@ -355,8 +355,8 @@ const Task = ({ task, index, columnId, deleteTask, completeTask}) => {
                             variant="outlined"
                             color="primary"
                             startIcon={<AddIcon />}
-                            onClick={isAdmin && !task.isCompleted ? handleReviewDialogOpen : null}
-                            disabled={!isAdmin || task.isCompleted}
+                            onClick={task.isCompleted ? null : handleReviewDialogOpen}
+                            disabled={task.isCompleted}
                         >
                             Review
                         </Button>
