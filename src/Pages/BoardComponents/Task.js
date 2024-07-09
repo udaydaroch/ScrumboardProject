@@ -441,55 +441,13 @@ const Task = ({ task, index, columnId, deleteTask,refreshBoard}) => {
                                 <TableCell>Title</TableCell>
                                 <TableCell>Description</TableCell>
                                 <TableCell>Completed</TableCell>
-                                <TableCell>Actions</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
                             {task.subTasks.map((subtask) => (
                                 <TableRow key={subtask.id}>
-                                    <TableCell>
-                                        {editingSubtask && editingSubtask.id === subtask.id ? (
-                                            <TextField
-                                                name="title"
-                                                value={subtaskTitle}
-                                                onChange={handleSubtaskChange}
-                                                fullWidth
-                                            />
-                                        ) : (
-                                            subtask.title
-                                        )}
-                                    </TableCell>
-                                    <TableCell>
-                                        {editingSubtask && editingSubtask.id === subtask.id ? (
-                                            <TextField
-                                                name="description"
-                                                value={subtaskDescription}
-                                                onChange={handleSubtaskChange}
-                                                fullWidth
-                                            />
-                                        ) : (
-                                            subtask.description
-                                        )}
-                                    </TableCell>
-                                    <TableCell>
-                                        <Checkbox
-                                            checked={subtask.completed}
-                                            onChange={() => handleCompleteSubtask(subtask)}
-                                            disabled={!(assignedUser && assignedUser.id === userId)}
-                                        />
-                                    </TableCell>
-                                    <TableCell>
-                                        {assignedUser && assignedUser.id === userId && (
-                                            <>
-                                                <IconButton size="small" onClick={() => handleEditSubtask(subtask)}>
-                                                    <EditIcon />
-                                                </IconButton>
-                                                <IconButton size="small" onClick={() => handleDeleteSubtask(subtask.id)}>
-                                                    <DeleteIcon />
-                                                </IconButton>
-                                            </>
-                                        )}
-                                    </TableCell>
+                                    <TableCell>{subtask.title}</TableCell>
+                                    <TableCell>{subtask.description}</TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
@@ -499,11 +457,6 @@ const Task = ({ task, index, columnId, deleteTask,refreshBoard}) => {
                     <Button onClick={handleInfoClose} color="primary">
                         Close
                     </Button>
-                    {editingSubtask && (
-                        <Button onClick={handleSaveSubtask} color="primary" variant="contained">
-                            Save
-                        </Button>
-                    )}
                 </DialogActions>
             </Dialog>
 
