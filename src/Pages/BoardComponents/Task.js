@@ -30,7 +30,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import useSessionStore from "../../zustandStorage/UserSessionInfo";
 import { useTeam } from './TeamContext';
 
-const Task = ({ task, index, columnId, deleteTask,refreshBoard}) => {
+const Task = ({ task, index, columnId, deleteTask, completeTask}) => {
     const [{isDragging}, drag] = useDrag({
         type: 'TASK',
         item: {id: task.id, index, columnId, hoverIndex: index},
@@ -53,7 +53,7 @@ const Task = ({ task, index, columnId, deleteTask,refreshBoard}) => {
     const {userId, token, teamId,isAdmin} = useSessionStore();
     const {teamMembers, loading} = useTeam();
     const [assignedUser, setAssignedUser] = useState(null);
-    const [adminChecked, setAdminChecked] = useState(null);
+    const [adminChecked, setAdminChecked] = useState(isAdmin);
     const [reviewingMembers, setReviewingMembers] = useState([]);
 
     const [assignedUserName, setAssignedUserName] = useState('');
@@ -118,6 +118,7 @@ const Task = ({ task, index, columnId, deleteTask,refreshBoard}) => {
             console.error('Error fetching assigned user:', error);
         }
     };
+
 
 
     useEffect(() => {
@@ -256,14 +257,19 @@ const Task = ({ task, index, columnId, deleteTask,refreshBoard}) => {
                         </IconButton>
                     </Tooltip>
                     {columnId === 'column-4' && (
-                        <Tooltip title="Admin confirmation">
-                            <span>
-                                <IconButton size="small" onClick={() => setAdminChecked(!adminChecked)} disabled={!isAdmin}>
-                                    <Switch checked={task.isCompleted} color="primary" />
-                                </IconButton>
-                            </span>
+                        <Tooltip title={isAdmin ? 'Admin confirmation' : 'Only admins can confirm'}>
+                        <span>
+                            <IconButton
+                                size="small"
+                                onClick={() => isAdmin && completeTask(task)}
+                                disabled={!isAdmin}
+                            >
+                                <Switch checked={task.isCompleted} color="primary" />
+                            </IconButton>
+                        </span>
                         </Tooltip>
                     )}
+
 
                 </Box>
             </Box>

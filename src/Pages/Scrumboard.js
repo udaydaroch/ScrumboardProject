@@ -212,6 +212,22 @@ const Scrumboard = () => {
         });
   };
 
+  const adminCheckFunction = async (task) => {
+    try {
+      const response = await axios.post(
+          `https://scrumboard-project-back-end.vercel.app/completeTask/${task.id}`,
+          {},
+          {
+            headers: {
+              'X-Authorization': token,
+            },
+          }
+      );
+    } catch (error) {
+      console.error('Error toggling admin check:', error);
+    }
+  };
+
   const handleAddTask = () => {
     const newTaskId = `task-${Date.now()}`;
     const task = {
@@ -463,7 +479,7 @@ const Scrumboard = () => {
 
             return (
                 <Box key={column.id} display="flex" flexDirection="column" alignItems="center" m={1}>
-                  <Column column={column} tasks={columnTasks} moveTask={moveTask} deleteTask={deleteTask} refreshBoard={refreshBoard} />
+                  <Column column={column} tasks={columnTasks} moveTask={moveTask} completeTask={adminCheckFunction} deleteTask={deleteTask} refreshBoard={refreshBoard} />
                 </Box>
             );
           })}
