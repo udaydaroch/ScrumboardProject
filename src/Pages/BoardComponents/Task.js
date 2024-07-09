@@ -295,7 +295,7 @@ const Task = ({ task, index, columnId, deleteTask , fetchBoard}) => {
     const handleCompleteSubtask = async (subtask) => {
         if (assignedUser && assignedUser.id === userId) {
             try {
-                await axios.put(`https://scrumboard-project-back-end.vercel.app/completeSubTask/${subtask.id}/user/${userId}`, {}, {
+                await axios.post(`https://scrumboard-project-back-end.vercel.app/completeSubTask/${subtask.id}/user/${userId}`, {}, {
                     headers: {
                         'X-Authorization': token
                     }
