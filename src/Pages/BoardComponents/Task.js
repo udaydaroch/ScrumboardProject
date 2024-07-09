@@ -301,7 +301,6 @@ const Task = ({ task, index, columnId, deleteTask }) => {
                     }
                 });
                 subtask.completed = !subtask.completed;
-                handleInfoClose();
             } catch (error) {
                 console.error('Error completing subtask:', error);
             }
