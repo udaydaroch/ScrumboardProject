@@ -252,24 +252,35 @@ const Task = ({ task, index, columnId, deleteTask, completeTask}) => {
             <Box display="flex" justifyContent="space-between" alignItems="center">
                 <Typography variant="subtitle1">{task.content}</Typography>
                 <Box display="flex" alignItems="center">
+
+                    {columnId === 'column-4' && (
+                        <Tooltip title={isAdmin ? 'Admin confirmation' : 'Only admins can confirm'}>
+                         <span>
+                          <IconButton
+                              size="small"
+                              onClick={() => isAdmin && completeTask(task)}
+                              disabled={!isAdmin}
+                          >
+                            <Switch checked={task.isCompleted} color="primary"/>
+                          </IconButton>
+                          <Typography
+                              variant="caption"
+                              style={{
+                                  color: task.isCompleted ? 'green' : 'inherit',
+                                  display: 'block',
+                                  textAlign: 'center'
+                              }}
+                          >
+                            {task.isCompleted ? 'Completed' : 'Ready to mark'}
+                          </Typography>
+                        </span>
+                        </Tooltip>
+                    )}
                     <Tooltip title="Task Details">
                         <IconButton size="small" onClick={handleInfoOpen}>
                             <InfoIcon />
                         </IconButton>
                     </Tooltip>
-                    {columnId === 'column-4' && (
-                        <Tooltip title={isAdmin ? 'Admin confirmation' : 'Only admins can confirm'}>
-                        <span>
-                            <IconButton
-                                size="small"
-                                onClick={() => isAdmin && completeTask(task)}
-                                disabled={!isAdmin}
-                            >
-                                <Switch checked={task.isCompleted} color="primary" />
-                            </IconButton>
-                        </span>
-                        </Tooltip>
-                    )}
 
 
                 </Box>
