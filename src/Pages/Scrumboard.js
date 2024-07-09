@@ -279,6 +279,10 @@ const Scrumboard = () => {
     setNewTask({ ...newTask, subTasks: [...newTask.subTasks, ''] });
   };
 
+  function refreshBoard() {
+    setFetchBoard((prev) => !prev);
+  }
+
   const handleRemoveSubTask = (index) => {
     const updatedSubTasks = newTask.subTasks.filter((_, i) => i !== index);
     setNewTask({ ...newTask, subTasks: updatedSubTasks });
@@ -440,7 +444,7 @@ const Scrumboard = () => {
 
             return (
                 <Box key={column.id} display="flex" flexDirection="column" alignItems="center" m={1}>
-                  <Column column={column} tasks={columnTasks} moveTask={moveTask} deleteTask={deleteTask} fetchBoard={setFetchBoard} />
+                  <Column column={column} tasks={columnTasks} moveTask={moveTask} deleteTask={deleteTask} fetchBoard={refreshBoard} />
                 </Box>
             );
           })}
