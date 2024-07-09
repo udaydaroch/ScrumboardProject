@@ -32,7 +32,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import useSessionStore from "../../zustandStorage/UserSessionInfo";
 import { useTeam } from './TeamContext';
 
-const Task = ({ task, index, columnId, deleteTask }) => {
+const Task = ({ task, index, columnId, deleteTask,refreshBoard}) => {
     const [{isDragging}, drag] = useDrag({
         type: 'TASK',
         item: {id: task.id, index, columnId, hoverIndex: index},
@@ -300,7 +300,7 @@ const Task = ({ task, index, columnId, deleteTask }) => {
                         'X-Authorization': token
                     }
                 });
-                subtask.completed = !subtask.completed;
+                refreshBoard();
             } catch (error) {
                 console.error('Error completing subtask:', error);
             }

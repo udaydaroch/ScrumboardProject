@@ -280,7 +280,7 @@ const Scrumboard = () => {
   };
 
   function refreshBoard() {
-    setFetchBoard((prev) => !prev);
+  setFetchBoard(!fetchBoard);
   }
 
   const handleRemoveSubTask = (index) => {
@@ -444,7 +444,7 @@ const Scrumboard = () => {
 
             return (
                 <Box key={column.id} display="flex" flexDirection="column" alignItems="center" m={1}>
-                  <Column column={column} tasks={columnTasks} moveTask={moveTask} deleteTask={deleteTask} fetchBoard={refreshBoard} />
+                  <Column column={column} tasks={columnTasks} moveTask={moveTask} deleteTask={deleteTask} refreshBoard={refreshBoard} />
                 </Box>
             );
           })}
