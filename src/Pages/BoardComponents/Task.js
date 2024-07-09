@@ -37,6 +37,7 @@ const Task = ({ task, index, columnId, deleteTask, completeTask}) => {
         collect: (monitor) => ({
             isDragging: monitor.isDragging(),
         }),
+        canDrag: () => !(task.isCompleted && columnId === "column-4")
     });
 
     const [, drop] = useDrop({
@@ -53,7 +54,6 @@ const Task = ({ task, index, columnId, deleteTask, completeTask}) => {
     const {userId, token, teamId,isAdmin} = useSessionStore();
     const {teamMembers, loading} = useTeam();
     const [assignedUser, setAssignedUser] = useState(null);
-    const [adminChecked, setAdminChecked] = useState(isAdmin);
     const [reviewingMembers, setReviewingMembers] = useState([]);
 
     const [assignedUserName, setAssignedUserName] = useState('');
@@ -209,14 +209,15 @@ const Task = ({ task, index, columnId, deleteTask, completeTask}) => {
 
     const handleRemoveReviewer = async () => {
         try {
-            setAssignedUser(null);
-            setAssignedUserName('');
+
             console.log("called");
             await axios.post(`https://scrumboard-project-back-end.vercel.app/removeTaskReviewer/${task.id}/removedBy/${userId}/reviewing/${reviewingUser.id}`, {}, {
                 headers: {
                     'X-Authorization': token
                 }
             });
+            setReviewingUser(null);
+            setReviewingUserName("");
             fetchReviewUser();
         } catch (error) {
             console.error('Error removing user:', error);
@@ -237,8 +238,8 @@ const Task = ({ task, index, columnId, deleteTask, completeTask}) => {
             style={{
                 padding: 15,
                 marginBottom: 12,
-                backgroundColor: isDragging ? '#ddd' : '#fff',
-                cursor: 'move',
+                backgroundColor: task.isCompleted && columnId === 'column-4' ? '#d3d3d3' : isDragging ? '#ddd' : '#fff',
+                cursor: task.isCompleted && columnId === 'column-4' ? 'default' : 'move',
                 opacity: isDragging ? 0.7 : 1,
                 boxShadow: isDragging
                     ? '0px 3px 6px rgba(0,0,0,0.3)'
@@ -302,7 +303,8 @@ const Task = ({ task, index, columnId, deleteTask, completeTask}) => {
                                     right: 0,
                                     transform: 'translate(50%, -50%)',
                                 }}
-                                onClick={handleRemoveUser}
+                                onClick={isAdmin && !task.isCompleted ? handleRemoveUser : null}
+                                disabled={!isAdmin || task.isCompleted}
                             >
                                 <CloseIcon />
                             </IconButton>
@@ -313,7 +315,8 @@ const Task = ({ task, index, columnId, deleteTask, completeTask}) => {
                             variant="outlined"
                             color="primary"
                             startIcon={<AddIcon />}
-                            onClick={handleAssignDialogOpen}
+                            onClick={isAdmin && !task.isCompleted ? handleAssignDialogOpen : null}
+                            disabled={!isAdmin || task.isCompleted}
                         >
                             Assign
                         </Button>
@@ -340,7 +343,8 @@ const Task = ({ task, index, columnId, deleteTask, completeTask}) => {
                                     right: 0,
                                     transform: 'translate(50%, -50%)',
                                 }}
-                                onClick={handleRemoveReviewer()}
+                                onClick={isAdmin && !task.isCompleted ? handleRemoveReviewer : null}
+                                disabled={!isAdmin || task.isCompleted}
                             >
                                 <CloseIcon />
                             </IconButton>
@@ -351,13 +355,15 @@ const Task = ({ task, index, columnId, deleteTask, completeTask}) => {
                             variant="outlined"
                             color="primary"
                             startIcon={<AddIcon />}
-                            onClick={handleReviewDialogOpen}
+                            onClick={isAdmin && !task.isCompleted ? handleReviewDialogOpen : null}
+                            disabled={!isAdmin || task.isCompleted}
                         >
                             Review
                         </Button>
                     )}
                 </Box>
             </Box>
+
 
             <Dialog open={infoOpen} onClose={handleInfoClose} maxWidth="md" fullWidth>
                 <DialogTitle>Task Details</DialogTitle>

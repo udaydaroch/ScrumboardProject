@@ -234,9 +234,12 @@ const Scrumboard = () => {
               'X-Authorization': token,
             },
           }
-      );
-      refreshBoard()
-      handleSnackbar('task is Confirmed by Admin.');
+      )
+      await refreshBoard()
+      const message = task.isCompleted
+          ? 'Task is marked incomplete by Admin.'
+          : 'Task is Confirmed by Admin.';
+      handleSnackbar(message);
     } catch (error) {
       console.error('Error toggling admin check:', error);
     }
