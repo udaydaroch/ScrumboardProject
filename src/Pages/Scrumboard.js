@@ -214,6 +214,7 @@ const Scrumboard = () => {
 
   const adminCheckFunction = async (task) => {
     try {
+      console.log("Clicked check by admin");
       const response = await axios.post(
           `https://scrumboard-project-back-end.vercel.app/completeTask/${task.id}`,
           {},
@@ -223,6 +224,7 @@ const Scrumboard = () => {
             },
           }
       );
+      refreshBoard()
     } catch (error) {
       console.error('Error toggling admin check:', error);
     }
