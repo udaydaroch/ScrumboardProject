@@ -300,7 +300,6 @@ const Task = ({ task, index, columnId, deleteTask , fetchBoard}) => {
                         'X-Authorization': token
                     }
                 });
-                fetchBoard();
                 handleInfoClose();
             } catch (error) {
                 console.error('Error completing subtask:', error);
