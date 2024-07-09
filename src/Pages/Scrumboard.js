@@ -58,6 +58,7 @@ const Scrumboard = () => {
   const [data, setData] = useState(initialData);
   const [activeDate, setActiveDate] = useState(new Date());
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [fetchBoard,setFetchBoard] = useState(false);
   const [newTask, setNewTask] = useState({
     content: '',
     description: '',
@@ -120,7 +121,7 @@ const Scrumboard = () => {
             });
       }
     }
-  }, [token, userId, navigate, params.id, activeDate]);
+  }, [token, userId, navigate, fetchBoard, params.id, activeDate]);
 
   const processData = (fetchedTasks) => {
     if (!fetchedTasks || fetchedTasks.length === 0) {
@@ -439,7 +440,7 @@ const Scrumboard = () => {
 
             return (
                 <Box key={column.id} display="flex" flexDirection="column" alignItems="center" m={1}>
-                  <Column column={column} tasks={columnTasks} moveTask={moveTask} deleteTask={deleteTask} />
+                  <Column column={column} tasks={columnTasks} moveTask={moveTask} deleteTask={deleteTask} fetchBoard={setFetchBoard} />
                 </Box>
             );
           })}

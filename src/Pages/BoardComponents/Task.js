@@ -32,7 +32,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import useSessionStore from "../../zustandStorage/UserSessionInfo";
 import { useTeam } from './TeamContext';
 
-const Task = ({ task, index, columnId, deleteTask }) => {
+const Task = ({ task, index, columnId, deleteTask , fetchBoard}) => {
     const [{isDragging}, drag] = useDrag({
         type: 'TASK',
         item: {id: task.id, index, columnId, hoverIndex: index},
@@ -295,16 +295,12 @@ const Task = ({ task, index, columnId, deleteTask }) => {
     const handleCompleteSubtask = async (subtask) => {
         if (assignedUser && assignedUser.id === userId) {
             try {
-                await axios.put(`https://scrumboard-project-back-end.vercel.app/updateSubtask/${subtask.id}`, {
-                    title: subtask.title,
-                    description: subtask.description,
-                    completed: !subtask.completed
-                }, {
+                await axios.put(`https://scrumboard-project-back-end.vercel.app/completeSubTask/${subtask.id}/user/${userId}`, {}, {
                     headers: {
                         'X-Authorization': token
                     }
                 });
-
+                fetchBoard((prev) => !prev);
                 handleInfoClose();
             } catch (error) {
                 console.error('Error completing subtask:', error);
