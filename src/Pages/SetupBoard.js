@@ -129,7 +129,7 @@ const SetupBoard = () => {
 
         axios.post(`https://scrumboard-project-back-end.vercel.app/setUpBoard`, scrumboardData, {
             headers: {
-                'Content-Type': 'application/json',
+                'X-Authorization': token,
             },
         })
             .then(response => {
