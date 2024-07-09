@@ -61,6 +61,7 @@ const Scrumboard = () => {
   const [activeDate, setActiveDate] = useState(new Date());
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [fetchBoard,setFetchBoard] = useState(false);
+  const [teamIdForSearch, setTeamIdForSearch] = useState(false);
   const [newTask, setNewTask] = useState({
     content: '',
     description: '',
@@ -90,20 +91,7 @@ const Scrumboard = () => {
     if (!token || !userId) {
       navigate('/login');
     } else {
-      if (params.id && isAdmin) {
-        axios.get(`https://scrumboard-project-back-end.vercel.app/getBoard/${params.id}`, {
-          headers: {
-            'X-Authorization': token,
-          }
-        })
-            .then(response => {
-              setIsEditable(response.data.isEditable);
-              processData(response.data.tasks);
-            })
-            .catch(error => {
-              console.error('Error fetching scrumboard data:', error);
-            });
-      } if(!isAdmin) {
+       if(!isAdmin) {
         axios.get(`https://scrumboard-project-back-end.vercel.app/team/${teamId}/getBoardByDate/${activeDate.toISOString().split('T')[0]}`, {
           headers: {
             'X-Authorization': token,
@@ -111,6 +99,7 @@ const Scrumboard = () => {
         })
             .then(response => {
               console.log(response.data);
+              setTeamIdForSearch(response.data.team_id);
               setIsEditable(response.data.iseditable);
               processData(response.data.tasks);
             })
@@ -124,6 +113,8 @@ const Scrumboard = () => {
           }
         })
             .then(response => {
+              console.log(response.data);
+              setTeamIdForSearch(response.data.team_id);
               setIsEditable(response.data.isEditable);
               processData(response.data.tasks);
             })
@@ -496,7 +487,7 @@ const Scrumboard = () => {
 
             return (
                 <Box key={column.id} display="flex" flexDirection="column" alignItems="center" m={1}>
-                  <Column column={column} tasks={columnTasks} moveTask={moveTask} completeTask={adminCheckFunction} deleteTask={deleteTask} refreshBoard={refreshBoard} />
+                  <Column column={column} tasks={columnTasks} moveTask={moveTask} completeTask={adminCheckFunction} deleteTask={deleteTask} refreshBoard={refreshBoard} teamId={teamIdForSearch}/>
                 </Box>
             );
           })}

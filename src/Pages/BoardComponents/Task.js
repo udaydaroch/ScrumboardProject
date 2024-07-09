@@ -28,9 +28,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import useSessionStore from "../../zustandStorage/UserSessionInfo";
-import { useTeam } from './TeamContext';
 
-const Task = ({ task, index, columnId, deleteTask, completeTask}) => {
+const Task = ({ task, index, columnId, deleteTask, completeTask, teamId}) => {
     const [{isDragging}, drag] = useDrag({
         type: 'TASK',
         item: {id: task.id, index, columnId, hoverIndex: index},
@@ -51,8 +50,8 @@ const Task = ({ task, index, columnId, deleteTask, completeTask}) => {
 
     const subTaskCount = task.subTasks.length;
     const estimation = task.estimation || 'N/A';
-    const {userId, token, teamId,isAdmin} = useSessionStore();
-    const {teamMembers, loading} = useTeam();
+    const {userId, token,isAdmin } = useSessionStore();
+
     const [assignedUser, setAssignedUser] = useState(null);
     const [reviewingMembers, setReviewingMembers] = useState([]);
 
@@ -64,6 +63,29 @@ const Task = ({ task, index, columnId, deleteTask, completeTask}) => {
     const [reviewingUserName, setReviewingUserName] = useState('');
     const [reviewingDialogOpen, setReviewingDialogOpen] = useState(false)
 
+    const [teamMembers, setTeamMembers] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchTeamMembers = async () => {
+            try {
+                const response = await axios.get(`https://scrumboard-project-back-end.vercel.app/getTeamByTeamId/${teamId}`, {
+                    headers: {
+                        'X-Authorization': token
+                    }
+                });
+                console.log(response.data);
+                setTeamMembers(response.data);
+            } catch (error) {
+                console.error('Error fetching team members:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchTeamMembers();
+
+    }, [teamId, token]);
 
     const fetchAssignedUser = async () => {
         try {

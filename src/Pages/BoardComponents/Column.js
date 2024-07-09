@@ -3,7 +3,7 @@ import { useDrop } from 'react-dnd';
 import { Paper, Typography, Box, Divider } from '@mui/material';
 import Task from './Task';
 
-const Column = ({ column, tasks, moveTask, deleteTask,completeTask }) => {
+const Column = ({ column, tasks, moveTask, deleteTask,completeTask,teamId }) => {
     const [, drop] = useDrop({
         accept: 'TASK',
         drop: (item, monitor) => {
@@ -65,7 +65,7 @@ const Column = ({ column, tasks, moveTask, deleteTask,completeTask }) => {
             <Divider sx={{ mb: 2, backgroundColor: 'rgba(0, 0, 0, 0.3)' }} />
             <Box sx={{ minHeight: 100, mt: 1 }}>
                 {tasks.map((task, index) => (
-                    <Task key={task.id} task={task} index={index} columnId={column.id} deleteTask={deleteTask} completeTask={completeTask}/>
+                    <Task key={task.id} task={task} index={index} columnId={column.id} deleteTask={deleteTask} completeTask={completeTask} teamId={teamId}/>
                 ))}
             </Box>
         </Paper>
