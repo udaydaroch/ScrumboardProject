@@ -14,7 +14,7 @@ import {
   IconButton,
   Grid,
   Card,
-  CardContent,
+  CardContent, Tooltip,
 } from '@mui/material';
 import Column from './BoardComponents/Column';
 import RemoveIcon from '@mui/icons-material/Remove';
@@ -152,6 +152,7 @@ const Scrumboard = () => {
         content: task.title,
         description: task.description,
         estimation: task.estimation_time,
+        isCompleted: task.is_completed,
         subTasks: task.subtasks || [],
       };
       columns[columnMap[task.column_name]].taskIds.push(taskId);
@@ -338,15 +339,33 @@ const Scrumboard = () => {
                 </IconButton>
               </Box>
               <Box mt={2}>
-                <Button
-                    variant="contained"
-                    color="primary"
-                    startIcon={<AddIcon />}
-                    onClick={() => setIsDialogOpen(true)}
-                    fullWidth
-                >
-                  Add Task
-                </Button>
+                {
+                  isEditable ? (
+                      <Button
+                          variant="contained"
+                          color="primary"
+                          startIcon={<AddIcon />}
+                          onClick={() => setIsDialogOpen(true)}
+                          fullWidth
+                      >
+                        Add Task
+                      </Button>
+                  ) : (
+                      <Tooltip title="Can't add tasks" placement="bottom">
+                    <span>
+                      <Button
+                          variant="contained"
+                          color="primary"
+                          startIcon={<AddIcon />}
+                          disabled
+                          fullWidth
+                      >
+                        Add Task
+                      </Button>
+                        </span>
+                      </Tooltip>
+                  )
+                }
               </Box>
             </CardContent>
           </Card>

@@ -18,8 +18,7 @@ import {
     TableCell,
     TableHead,
     TableRow,
-    TextField,
-    Checkbox,
+    Switch,
     List,
     ListItem,
     ListItemText
@@ -28,7 +27,6 @@ import InfoIcon from '@mui/icons-material/Info';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
-import EditIcon from '@mui/icons-material/Edit';
 import useSessionStore from "../../zustandStorage/UserSessionInfo";
 import { useTeam } from './TeamContext';
 
@@ -52,10 +50,10 @@ const Task = ({ task, index, columnId, deleteTask,refreshBoard}) => {
 
     const subTaskCount = task.subTasks.length;
     const estimation = task.estimation || 'N/A';
-    const {userId, token, teamId} = useSessionStore();
+    const {userId, token, teamId,isAdmin} = useSessionStore();
     const {teamMembers, loading} = useTeam();
     const [assignedUser, setAssignedUser] = useState(null);
-
+    const [adminChecked, setAdminChecked] = useState(null);
     const [reviewingMembers, setReviewingMembers] = useState([]);
 
     const [assignedUserName, setAssignedUserName] = useState('');
@@ -66,10 +64,6 @@ const Task = ({ task, index, columnId, deleteTask,refreshBoard}) => {
     const [reviewingUserName, setReviewingUserName] = useState('');
     const [reviewingDialogOpen, setReviewingDialogOpen] = useState(false)
 
-
-    const [editingSubtask, setEditingSubtask] = useState(null);
-    const [subtaskTitle, setSubtaskTitle] = useState('');
-    const [subtaskDescription, setSubtaskDescription] = useState('');
 
     const fetchAssignedUser = async () => {
         try {
@@ -234,9 +228,6 @@ const Task = ({ task, index, columnId, deleteTask,refreshBoard}) => {
 
     const handleInfoClose = () => {
         setInfoOpen(false);
-        setEditingSubtask(null);
-        setSubtaskTitle('');
-        setSubtaskDescription('');
     };
 
     return (
@@ -265,12 +256,15 @@ const Task = ({ task, index, columnId, deleteTask,refreshBoard}) => {
                         </IconButton>
                     </Tooltip>
                     {columnId === 'column-4' && (
-                        <Tooltip title="Delete Task">
-                            <IconButton size="small" onClick={() => deleteTask(task.id)}>
-                                <DeleteIcon />
-                            </IconButton>
+                        <Tooltip title="Admin confirmation">
+                            <span>
+                                <IconButton size="small" onClick={() => setAdminChecked(!adminChecked)} disabled={!isAdmin}>
+                                    <Switch checked={task.isCompleted} color="primary" />
+                                </IconButton>
+                            </span>
                         </Tooltip>
                     )}
+
                 </Box>
             </Box>
             <Box mt={1}>
