@@ -22,6 +22,8 @@ import AddIcon from '@mui/icons-material/Add';
 import useSessionStore from "../zustandStorage/UserSessionInfo";
 import {useNavigate, useParams} from "react-router-dom";
 import axios from "axios";
+import Alert from "@mui/material/Alert";
+import Snackbar from "@mui/material/Snackbar";
 
 const initialData = {
   columns: {
@@ -66,6 +68,14 @@ const Scrumboard = () => {
     column: 'column-1',
     subTasks: [],
   });
+  const [snackbarOpen, setSnackbarOpen] = useState(false); // State for Snackbar
+  const [snackbarMessage, setSnackbarMessage] = useState(''); // State for Snackbar message
+
+  const handleSnackbar = (message) => {
+    setSnackbarMessage(message);
+    setSnackbarOpen(true);
+  };
+
   const [isEditable, setIsEditable] = useState(true);
   const { userId, token,isAdmin,teamId} = useSessionStore();
   const navigate = useNavigate();
@@ -100,7 +110,8 @@ const Scrumboard = () => {
           }
         })
             .then(response => {
-              setIsEditable(response.data.isEditable);
+              console.log(response.data);
+              setIsEditable(response.data.iseditable);
               processData(response.data.tasks);
             })
             .catch(error => {
@@ -225,6 +236,7 @@ const Scrumboard = () => {
           }
       );
       refreshBoard()
+      handleSnackbar('task is Confirmed by Admin.');
     } catch (error) {
       console.error('Error toggling admin check:', error);
     }
@@ -486,6 +498,16 @@ const Scrumboard = () => {
             );
           })}
         </Box>
+
+        <Snackbar
+            open={snackbarOpen}
+            autoHideDuration={6000}
+            onClose={() => setSnackbarOpen(false)}
+        >
+          <Alert onClose={() => setSnackbarOpen(false)} severity="successful" sx={{ width: '100%' }}>
+            {snackbarMessage}
+          </Alert>
+        </Snackbar>
       </DndProvider>
   );
 };
